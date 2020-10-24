@@ -32,10 +32,10 @@ if __name__=="__main__":
 
 
 
-    from model.simple_vae import VAE 
+    from model import model 
     import torch
     import numpy as np 
 
     xx = torch.FloatTensor(np.random.random((1, 3, 512, 512)))
-    vae = VAE(cfg["model_cfg"])
+    vae = model.factory.create(cfg["model_cfg"].model_key, **{"model_cfg": cfg["model_cfg"]})
     vae(xx)

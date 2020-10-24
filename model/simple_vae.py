@@ -21,7 +21,6 @@ class VAE(BaseVAE):
     def _build_decoder(self):
         self.decoder_fc = Network(self.cfg.network["decoder_fc"])
         self.decoder = Network(self.cfg.network["decoder"])
-        pass
 
     def encode(self, input):
         result = self.encoder(input)
