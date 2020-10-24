@@ -1,0 +1,19 @@
+# default config file
+experiment:
+  description: "this is an example config file"
+  output_location: "path to where trained models should be saved"
+
+data:
+  train: "path to folder containing training data"
+  val: "path to folder containing validation data"
+  test: "path to folder containing test data"
+  batch_size: 16
+  sample_size: 100
+
+model:
+  model_key: "registered key of the model to use"
+  trainer_key: "registered key of the training algorithm to use"
+  mode:
+    - train
+    - val
+  epochs: 100
