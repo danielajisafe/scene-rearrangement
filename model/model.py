@@ -1,3 +1,5 @@
+from model.simple_vae import VAEBuilder
+
 class ModelFactory(object):
     """Factory class to build new model objects
     """
@@ -30,3 +32,4 @@ class ModelFactory(object):
 
 
 factory = ModelFactory()
+factory.register_builder("simple_vae", VAEBuilder())

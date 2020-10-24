@@ -62,3 +62,25 @@ class VAE(BaseVAE):
 
         samples = self.decode(z)
         return samples
+
+
+class VAEBuilder(object):
+    """VAE Model Builder Class
+    """
+
+    def __init__(self):
+        """VAE Model Builder Class Constructor
+        """
+        self._instance = None
+
+    def __call__(self, model_cfg, **_ignored):
+        """Callback function
+        Args:
+            model_cfg (ModelConfig): Model Config object
+            **_ignored: ignore extra arguments
+        Returns:
+            VAE: Instantiated VAE network object
+        """
+        if not self._instance:
+            self._instance = VAE(model_cfg=model_cfg)
+        return self._instance

@@ -13,7 +13,7 @@ data:
   crop_size: 512
 
 model:
-  model_key: registered key of the model to use
+  model_key: simple_vae
   trainer_key: registered key of the training algorithm to use
   mode:
     - train
