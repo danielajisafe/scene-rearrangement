@@ -1,20 +1,105 @@
 # default config file
 experiment:
-  description: "initial reconstruction test with semantic_rgb images"
-  output_location: "path to where trained models should be saved"
+  description: initial reconstruction test with semantic_rgb images
+  output_location: path to where trained models should be saved
 
 data:
-  train: "/home/namrata/projects/data/kitti-360/data_2d_semantics/train"
-  val: "path to folder containing validation data"
-  test: "path to folder containing test data"
+  train: /home/namrata/projects/data/kitti-360/data_2d_semantics/train
+  val: path to folder containing validation data"
+  test: path to folder containing test data
   batch_size: 16
   sample_size: null
   rgb: True
+  crop_size: 512
 
 model:
-  model_key: "registered key of the model to use"
-  trainer_key: "registered key of the training algorithm to use"
+  model_key: registered key of the model to use
+  trainer_key: registered key of the training algorithm to use
   mode:
     - train
     - val
   epochs: 100
+  network:
+    encoder:
+      - Conv2d:
+          in_channels: 3
+          out_channels: 64
+          kernel_size: 3
+        activation: ReLU
+      - Conv2d:
+          in_channels: 64
+          out_channels: 64
+          kernel_size: 3
+        activation: ReLU
+      - MaxPool2d:
+          kernel_size: 2
+      - Conv2d:
+          in_channels: 64
+          out_channels: 128
+          kernel_size: 3
+        activation: ReLU
+      - Conv2d:
+          in_channels: 128
+          out_channels: 128
+          kernel_size: 3
+        activation: ReLU
+      - MaxPool2d:
+          kernel_size: 2
+      - Conv2d:
+          in_channels: 128
+          out_channels: 256
+          kernel_size: 3
+        activation: ReLU
+      - Conv2d:
+          in_channels: 256
+          out_channels: 256
+          kernel_size: 3
+        activation: ReLU
+      - MaxPool2d:
+          kernel_size: 2
+      - Conv2d:
+          in_channels: 256
+          out_channels: 512
+          kernel_size: 3
+        activation: ReLU
+      - Conv2d:
+          in_channels: 512
+          out_channels: 512
+          kernel_size: 3
+        activation: ReLU
+        dropout: 0.5
+      - MaxPool2d:
+          kernel_size: 2
+
+    encoder_fc:
+      - Linear:
+          in_features: 401408
+          out_features: 2048
+        activation: ReLU
+        dropout: 0.5
+      - Linear:
+          in_features: 2048
+          out_features: 1024
+        activation: ReLU
+        dropout: 0.5
+      - Linear:
+          in_features: 1024
+          out_features: 512
+        activation: ReLU
+        dropout: 0.5
+
+    fc_mu:
+      - Linear:
+          in_features: 512
+          out_features: 32
+        activation: ReLU
+
+    fc_var:
+      - Linear:
+          in_features: 512
+          out_features: 32
+        activation: ReLU
+
+    decoder_fc:
+
+    decoder:

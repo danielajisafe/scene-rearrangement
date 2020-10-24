@@ -29,3 +29,13 @@ if __name__=="__main__":
     os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
 
     cfg = cfg_parser(join("config", args.version))
+
+
+
+    from model.simple_vae import VAE 
+    import torch
+    import numpy as np 
+
+    xx = torch.FloatTensor(np.random.random((1, 3, 512, 512)))
+    vae = VAE(cfg["model_cfg"])
+    vae.encode(xx)

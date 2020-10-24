@@ -1,5 +1,5 @@
 from torch import nn
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 
 
 class BaseModel(nn.Module, ABC):
@@ -23,7 +23,6 @@ class BaseVAE(BaseModel, ABC):
 
 	def _build_modules(self):
 		self._build_encoder()
-		self._build_sampler()
 		self._build_decoder()
 
 	@abstractmethod
@@ -31,7 +30,7 @@ class BaseVAE(BaseModel, ABC):
 		pass
 
 	@abstractmethod
-	def _build_sampler(self):
+	def sample(self):
 		pass
 
 	@abstractmethod
