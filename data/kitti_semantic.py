@@ -23,7 +23,7 @@ class Kitti360Semantic(Dataset):
 		if self.rgb:
 			mask = mask/255.
 		else:
-			mask = mask[:, :, 0:1]
+			mask = mask[:, :, 0:1]/255.
 
 		# Convert to CxHxW
 		mask = mask.transpose(2, 0, 1)
