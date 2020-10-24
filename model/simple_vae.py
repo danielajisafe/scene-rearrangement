@@ -19,8 +19,8 @@ class VAE(BaseVAE):
         self.fc_var = Network(self.cfg.network["fc_var"])
 
     def _build_decoder(self):
-        # self.decoder_fc = Network(self.cfg.network["decoder_fc"])
-        # self.decoder = Network(self.cfg.network["decoder"])
+        self.decoder_fc = Network(self.cfg.network["decoder_fc"])
+        self.decoder = Network(self.cfg.network["decoder"])
         pass
 
     def encode(self, input):
@@ -33,10 +33,28 @@ class VAE(BaseVAE):
 
         return mu, log_var
 
+    def reparameterize(self, mu, logvar):
+        """
+        Reparameterization trick to sample from N(mu, var) from N(0,1).
+        :param mu: (Tensor) Mean of the latent Gaussian [B x D]
+        :param logvar: (Tensor) Standard deviation of the latent Gaussian [B x D]
+        :return: (Tensor) [B x D]
+        """
+        std = torch.exp(0.5 * logvar)
+        eps = torch.randn_like(std)
+        return eps * std + mu
+
     def decode(self, z):
         result = self.decoder_fc(z)
-        # result = result.view(-1, )
+        result = result.view(-1, 512, 16, 16)
+        result = self.decoder(result)
 
+        return result
+
+    def forward(self, input):
+        mu, log_var = self.encode(input)
+        z = self.reparameterize(mu, log_var)
+        return  [self.decode(z), input, mu, log_var]
 
     def sample(self, num_samples):
         z = torch.randn(num_samples, self.cfg.latent_dim)
@@ -44,6 +62,3 @@ class VAE(BaseVAE):
 
         samples = self.decode(z)
         return samples
-
-    def forward(self):
-        pass

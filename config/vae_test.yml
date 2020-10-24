@@ -23,57 +23,53 @@ model:
     encoder:
       - Conv2d:
           in_channels: 3
-          out_channels: 64
+          out_channels: 32
           kernel_size: 3
-        activation: ReLU
+          stride: 2
+          padding: 1
+      - BatchNorm2d:
+          num_features: 32
+        activation: LeakyReLU
       - Conv2d:
-          in_channels: 64
+          in_channels: 32
           out_channels: 64
           kernel_size: 3
-        activation: ReLU
-      - MaxPool2d:
-          kernel_size: 2
+          stride: 2
+          padding: 1
+      - BatchNorm2d:
+          num_features: 64
+        activation: LeakyReLU
       - Conv2d:
           in_channels: 64
           out_channels: 128
           kernel_size: 3
-        activation: ReLU
-      - Conv2d:
-          in_channels: 128
-          out_channels: 128
-          kernel_size: 3
-        activation: ReLU
-      - MaxPool2d:
-          kernel_size: 2
+          stride: 2
+          padding: 1
+      - BatchNorm2d:
+          num_features: 128
+        activation: LeakyReLU
       - Conv2d:
           in_channels: 128
           out_channels: 256
           kernel_size: 3
-        activation: ReLU
-      - Conv2d:
-          in_channels: 256
-          out_channels: 256
-          kernel_size: 3
-        activation: ReLU
-      - MaxPool2d:
-          kernel_size: 2
+          stride: 2
+          padding: 1
+      - BatchNorm2d:
+          num_features: 256
+        activation: LeakyReLU
       - Conv2d:
           in_channels: 256
           out_channels: 512
           kernel_size: 3
-        activation: ReLU
-      - Conv2d:
-          in_channels: 512
-          out_channels: 512
-          kernel_size: 3
-        activation: ReLU
-        dropout: 0.5
-      - MaxPool2d:
-          kernel_size: 2
+          stride: 2
+          padding: 1
+      - BatchNorm2d:
+          num_features: 512
+        activation: LeakyReLU
 
     encoder_fc:
       - Linear:
-          in_features: 401408
+          in_features: 131072
           out_features: 2048
         activation: ReLU
         dropout: 0.5
@@ -101,5 +97,77 @@ model:
         activation: ReLU
 
     decoder_fc:
+      - Linear:
+          in_features: 32
+          out_features: 512
+        activation: ReLU
+      - Linear:
+          in_features: 512
+          out_features: 1024
+        activation: ReLU
+      - Linear:
+          in_features: 1024
+          out_features: 2048
+        activation: ReLU
+      - Linear:
+          in_features: 2048
+          out_features: 131072
+        activation: ReLU
 
     decoder:
+      - ConvTranspose2d:
+          in_channels: 512
+          out_channels: 256
+          kernel_size: 3
+          stride: 2
+          padding: 1
+          output_padding: 1
+      - BatchNorm2d:
+          num_features: 256
+        activation: LeakyReLU
+      - ConvTranspose2d:
+          in_channels: 256
+          out_channels: 128
+          kernel_size: 3
+          stride: 2
+          padding: 1
+          output_padding: 1
+      - BatchNorm2d:
+          num_features: 128
+        activation: LeakyReLU
+      - ConvTranspose2d:
+          in_channels: 128
+          out_channels: 64
+          kernel_size: 3
+          stride: 2
+          padding: 1
+          output_padding: 1
+      - BatchNorm2d:
+          num_features: 64
+        activation: LeakyReLU
+      - ConvTranspose2d:
+          in_channels: 64
+          out_channels: 32
+          kernel_size: 3
+          stride: 2
+          padding: 1
+          output_padding: 1
+      - BatchNorm2d:
+          num_features: 32
+        activation: LeakyReLU
+      - ConvTranspose2d:
+          in_channels: 32
+          out_channels: 32
+          kernel_size: 3
+          stride: 2
+          padding: 1
+          output_padding: 1
+      - BatchNorm2d:
+          num_features: 32
+        activation: LeakyReLU
+      - Conv2d:
+          in_channels: 32
+          out_channels: 3
+          kernel_size: 3
+          padding: 1
+        activation: Tanh

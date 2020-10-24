@@ -38,4 +38,4 @@ if __name__=="__main__":
 
     xx = torch.FloatTensor(np.random.random((1, 3, 512, 512)))
     vae = VAE(cfg["model_cfg"])
-    vae.encode(xx)
+    vae(xx)
