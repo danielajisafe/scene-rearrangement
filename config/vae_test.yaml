@@ -1,0 +1,20 @@
+# default config file
+experiment:
+  description: "initial reconstruction test with semantic_rgb images"
+  output_location: "path to where trained models should be saved"
+
+data:
+  train: "/home/namrata/projects/data/kitti-360/data_2d_semantics/train"
+  val: "path to folder containing validation data"
+  test: "path to folder containing test data"
+  batch_size: 16
+  sample_size: null
+  rgb: True
+
+model:
+  model_key: "registered key of the model to use"
+  trainer_key: "registered key of the training algorithm to use"
+  mode:
+    - train
+    - val
+  epochs: 100
