@@ -1,3 +1,4 @@
+from tqdm import tqdm
 from collections import defaultdict, OrderedDict
 
 import torch
@@ -6,6 +7,8 @@ from torch.utils.data import DataLoader
 
 from data import data
 from model import model
+from utils.utils import dict_to_device
+from losses.losses import mse, KL
 
 
 class VAETrainer(object):
@@ -60,14 +63,37 @@ class VAETrainer(object):
             "optim.{}(vae_params, **{})".format([*vae_optim_cfg.keys()][0], [*vae_optim_cfg.values()][0])
         )
 
+    def _backprop(self, loss):
+        self.vae_opt.zero_grad()
+        loss.backward()
+        self.vae_opt.step()
+
     def _epoch(self, mode:str, epochID: int):
-        pass #TODO
+        if mode.__eq__('train'):
+            self.model.train()
+        else:
+            self.model.eval()
+        data_iter = iter(self.dataloaders[mode]["kitti360_semantic"])
+        iterator = tqdm(range(len(self.dataloaders[mode]["kitti360_semantic"])), dynamic_ncols=True)
+
+        for i in iterator:
+            batch_data = dict_to_device(next(data_iter), self.device)
+            model_out = self.model(batch_data["mask"])
+
+            reconst_loss = mse(model_out.reconst, batch_data['mask'])
+            kld = KL(model_out.mu, model_out.log_var)
+
+            loss = reconst_loss + kld
+
+            self._backprop(loss)
+
+            iterator.set_description("V: {} | Epoch: {} | {} | Loss: {:.4f}".format(self.exp_cfg.cfg_file,
+                epochID, mode, loss.item()), refresh=True)
 
     def train(self):
         for epochID in range(self.model_cfg.epochs):
             for mode in self.model_cfg.modes:
                 self._epoch(mode, epochID)
-
 
 
 class VAETrainerBuilder(object):

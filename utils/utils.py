@@ -20,3 +20,18 @@ def seed_everything(seed=0, harsh=False):
         torch.backends.cudnn.enabled = False
         torch.backends.cudnn.benchmark = False
         torch.backends.cudnn.deterministic = True
+
+def dict_to_device(d_ten: dict, device):
+    """
+    Sets a dictionary to device
+    Args:
+        d_ten (dict): dictionary of tensors
+        device (str): torch device
+    Returns:
+        dict: dictionary on device
+    """
+    for key, tensor in d_ten.items():
+        if type(tensor) is torch.Tensor:
+            d_ten[key] = d_ten[key].to(device)
+
+    return d_ten

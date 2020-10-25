@@ -9,7 +9,7 @@ data:
         train: /home/namrata/projects/data/kitti-360/data_2d_semantics/train
         val: path to folder containing validation data"
         test: path to folder containing test data
-        batch_size: 16
+        batch_size: 8
         sample_size: null
         rgb: True
         crop_size: 512

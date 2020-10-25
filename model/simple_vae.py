@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+from collections import namedtuple
 
 from model.base import BaseVAE
 from model.network import Network
@@ -53,7 +54,16 @@ class VAE(BaseVAE):
     def forward(self, input):
         mu, log_var = self.encode(input)
         z = self.reparameterize(mu, log_var)
-        return  [self.decode(z), input, mu, log_var]
+
+        model_out_tuple = namedtuple(
+            "model_out",
+            ["reconst", "mu", "log_var"],
+        )
+        model_out = model_out_tuple(
+            self.decode(z), mu, log_var
+        )
+
+        return model_out
 
     def sample(self, num_samples):
         z = torch.randn(num_samples, self.cfg.latent_dim)
