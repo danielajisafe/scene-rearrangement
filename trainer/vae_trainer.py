@@ -1,6 +1,7 @@
 from collections import defaultdict, OrderedDict
 
 import torch
+import torch.optim as optim
 from torch.utils.data import DataLoader
 
 from data import data
@@ -17,6 +18,7 @@ class VAETrainer(object):
 
         self._setup_dataloaders()
         self.model = model.factory.create(self.model_cfg.model_key, **{"model_cfg": self.model_cfg}).to(self.device)
+        self._setup_optimizers()
 
     def _setup_dataloaders(self):
         self.datasets = defaultdict(list)
@@ -49,3 +51,11 @@ class VAETrainer(object):
                 dataloaders[mode][dataset[2]] = dataloader
 
         return dataloaders
+
+    def _setup_optimizers(self):
+        vae_params = list(self.model.parameters())
+        vae_optim_cfg = self.model_cfg.optimizers["vae"]
+
+        self.vae_opt =  eval(
+            "optim.{}(vae_params, **{})".format([*vae_optim_cfg.keys()][0], [*vae_optim_cfg.values()][0])
+        )
