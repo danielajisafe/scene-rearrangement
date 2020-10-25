@@ -8,7 +8,7 @@ from torch.utils.data import Dataset
 
 
 class Kitti360Semantic(Dataset):
-	def __init__(self, data_dir:str, sample_size:int, rgb:bool, crop_size:int, **ignored):
+	def __init__(self, data_dir:str, sample_size:int, rgb:bool, crop_size:int):
 		if rgb:
 			self.data = glob(join(data_dir, '*', 'semantic_rgb', '*.png'))[:sample_size]
 		else:
@@ -31,3 +31,18 @@ class Kitti360Semantic(Dataset):
 		mask = mask.transpose(2, 0, 1)
 
 		return {"mask": torch.FloatTensor(mask)}
+
+
+class Kitti360SemanticBuilder(object):
+    def __init__(self):
+        self._instance = None
+
+    def __call__(self, rgb: bool, data_dir: str, crop_size: int, sample_size: int = None, **_ignored):
+
+        self._instance = Kitti360Semantic(
+            data_dir=data_dir,
+            sample_size=sample_size,
+            rgb=rgb,
+            crop_size=crop_size
+        )
+        return self._instance
