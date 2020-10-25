@@ -9,9 +9,9 @@ data:
         train: /home/namrata/projects/data/kitti-360/data_2d_semantics/train
         val: path to folder containing validation data"
         test: path to folder containing test data
-        batch_size: 8
+        batch_size: 1
         sample_size: null
-        rgb: True
+        rgb: False
         crop_size: 512
   num_workers: 8
 
@@ -24,7 +24,7 @@ model:
   network:
     encoder:
       - Conv2d:
-          in_channels: 3
+          in_channels: 1
           out_channels: 32
           kernel_size: 3
           stride: 2
@@ -169,7 +169,7 @@ model:
         activation: LeakyReLU
       - Conv2d:
           in_channels: 32
-          out_channels: 3
+          out_channels: 1
           kernel_size: 3
           padding: 1
         activation: Tanh

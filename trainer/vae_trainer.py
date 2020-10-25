@@ -84,7 +84,6 @@ class VAETrainer(object):
             kld = KL(model_out.mu, model_out.log_var)
 
             loss = reconst_loss + kld
-
             self._backprop(loss)
 
             iterator.set_description("V: {} | Epoch: {} | {} | Loss: {:.4f}".format(self.exp_cfg.cfg_file,
