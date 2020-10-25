@@ -17,7 +17,7 @@ data:
 
 model:
   model_key: simple_vae
-  trainer_key: registered key of the training algorithm to use
+  trainer_key: vae_trainer
   modes:
     - train
   epochs: 100

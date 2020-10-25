@@ -59,3 +59,35 @@ class VAETrainer(object):
         self.vae_opt =  eval(
             "optim.{}(vae_params, **{})".format([*vae_optim_cfg.keys()][0], [*vae_optim_cfg.values()][0])
         )
+
+    def _epoch(self, mode:str, epochID: int):
+        pass #TODO
+
+    def train(self):
+        for epochID in range(self.model_cfg.epochs):
+            for mode in self.model_cfg.modes:
+                self._epoch(mode, epochID)
+
+
+
+class VAETrainerBuilder(object):
+    """VAE Trainer Builder Class
+    """
+
+    def __init__(self):
+        """VAE Trainer Builder Class Constructor
+        """
+        self._instance = None
+
+    def __call__(self, data_cfg, model_cfg, exp_cfg, **_ignored):
+        """Callback function
+        Args:
+            data_cfg (Config): Data Config object
+            model_cfg (Config): Model Config object
+            exp_cfg (Config): Experiment Config object
+        Returns:
+            VAETrainer: Instantiated VAE trainer object
+        """
+        if not self._instance:
+            self._instance = VAETrainer(data_cfg=data_cfg, model_cfg=model_cfg, exp_cfg=exp_cfg)
+        return self._instance

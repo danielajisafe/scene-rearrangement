@@ -2,6 +2,7 @@ import os
 import argparse
 from os.path import join
 
+from trainer import trainer
 from config.config import cfg_parser
 from utils.utils import seed_everything
 
@@ -29,9 +30,6 @@ if __name__=="__main__":
     os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
 
     cfg = cfg_parser(join("config", args.version))
-
-
-
-    from trainer.vae_trainer import VAETrainer 
     
-    pipeline = VAETrainer(**cfg)
+    pipeline = trainer.factory.create(cfg["model_cfg"].trainer_key, **cfg)
+    pipeline.train()
