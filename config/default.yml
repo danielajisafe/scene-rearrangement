@@ -9,7 +9,7 @@ data:
   test: "path to folder containing test data"
   batch_size: 16
   sample_size: 100
-  num_worker: 8
+  num_workers: 8
 
 model:
   model_key: "registered key of the model to use"

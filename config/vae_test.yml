@@ -13,14 +13,13 @@ data:
         sample_size: null
         rgb: True
         crop_size: 512
-        num_worker: 8
+  num_workers: 8
 
 model:
   model_key: simple_vae
   trainer_key: registered key of the training algorithm to use
-  mode:
+  modes:
     - train
-    - val
   epochs: 100
   network:
     encoder:

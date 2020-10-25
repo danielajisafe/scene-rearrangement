@@ -32,10 +32,6 @@ if __name__=="__main__":
 
 
 
-    from model import model 
-    import torch
-    import numpy as np 
-
-    xx = torch.FloatTensor(np.random.random((1, 3, 512, 512)))
-    vae = model.factory.create(cfg["model_cfg"].model_key, **{"model_cfg": cfg["model_cfg"]})
-    vae(xx)
+    from trainer.vae_trainer import VAETrainer 
+    
+    pipeline = VAETrainer(**cfg)
