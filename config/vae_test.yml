@@ -20,6 +20,9 @@ model:
   modes:
     - train
   epochs: 100
+  loss_weights:
+    reconstruction: 1
+    kld: 10
   network:
     encoder:
       - Conv2d:

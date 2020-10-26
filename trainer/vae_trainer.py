@@ -99,7 +99,8 @@ class VAETrainer(object):
             reconst_loss = mse(model_out.reconst, batch_data['mask'])
             kld = KL(model_out.mu, model_out.log_var)
 
-            loss = reconst_loss + kld
+            loss = self.model_cfg.loss_weights['reconstruction'] * reconst_loss \
+                + self.model_cfg.loss_weights['kld'] * kld
             self._backprop(loss)
 
             iterator.set_description("V: {} | Epoch: {} | {} | Loss: {:.4f}".format(self.exp_cfg.cfg_file,
