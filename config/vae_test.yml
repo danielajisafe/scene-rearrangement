@@ -139,6 +139,8 @@ model:
       - BatchNorm2d:
           num_features: 64
         activation: ReLU
+      - Upsample:
+          scale_factor: 2
       - ConvTranspose2d:
           in_channels: 64
           out_channels: 32
