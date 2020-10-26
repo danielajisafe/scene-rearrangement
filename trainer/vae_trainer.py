@@ -1,6 +1,7 @@
 from tqdm import tqdm
 from collections import defaultdict, OrderedDict
 
+import wandb
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
@@ -21,6 +22,8 @@ class VAETrainer(object):
 
         self._setup_dataloaders()
         self.model = model.factory.create(self.model_cfg.model_key, **{"model_cfg": self.model_cfg}).to(self.device)
+        if self.exp_cfg.wandb:
+            wandb.watch(self.model)
         self._setup_optimizers()
 
     def _setup_dataloaders(self):

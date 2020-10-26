@@ -1,16 +1,15 @@
-# default config file
 experiment:
   description: initial reconstruction test with semantic_rgb images
-  output_location: path to where trained models should be saved
+  output_location: path to where trained models should be saved (#TODO)
 
 data:
   sources:
     - kitti360_semantic:
         train: /media/namrata/Data/data/kitti-360/data_2d_semantics/train
-        val: path to folder containing validation data"
+        val: path to folder containing validation data
         test: path to folder containing test data
         batch_size: 8
-        sample_size: null
+        sample_size: 100
         rgb: False
         crop_size: 512
   num_workers: 8
