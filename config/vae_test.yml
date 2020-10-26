@@ -1,0 +1,149 @@
+experiment:
+  description: initial reconstruction test with semantic_rgb images
+  output_location: path to where trained models should be saved (#TODO)
+
+data:
+  sources:
+    - kitti360_semantic:
+        train: /media/namrata/Data/data/kitti-360/data_2d_semantics/train
+        val: path to folder containing validation data
+        test: path to folder containing test data
+        batch_size: 8
+        sample_size: 1000
+        rgb: True
+        crop_size: 512
+  num_workers: 8
+
+model:
+  model_key: simple_vae
+  trainer_key: vae_trainer
+  modes:
+    - train
+  epochs: 100
+  loss_weights:
+    reconstruction: 1
+    kld: 10
+  network:
+    encoder:
+      - Conv2d:
+          in_channels: 3
+          out_channels: 32
+          kernel_size: 3
+          stride: 2
+        activation: ReLU
+      - Conv2d:
+          in_channels: 32
+          out_channels: 64
+          kernel_size: 3
+          stride: 2
+        activation: ReLU
+      - MaxPool2d:
+          kernel_size: 2
+          stride: 2
+      - Conv2d:
+          in_channels: 64
+          out_channels: 128
+          kernel_size: 3
+          stride: 2
+        activation: ReLU
+      - Conv2d:
+          in_channels: 128
+          out_channels: 256
+          kernel_size: 3
+          stride: 2
+        activation: ReLU
+      - Conv2d:
+          in_channels: 256
+          out_channels: 512
+          kernel_size: 3
+          stride: 2
+        activation: ReLU
+
+    encoder_fc:
+      - Linear:
+          in_features: 25088
+          out_features: 2048
+        activation: ReLU
+        dropout: 0.5
+      - Linear:
+          in_features: 2048
+          out_features: 1024
+        activation: ReLU
+        dropout: 0.5
+      - Linear:
+          in_features: 1024
+          out_features: 512
+        activation: ReLU
+        dropout: 0.5
+
+    fc_mu:
+      - Linear:
+          in_features: 512
+          out_features: 32
+        activation: ReLU
+
+    fc_var:
+      - Linear:
+          in_features: 512
+          out_features: 32
+        activation: ReLU
+
+    decoder_fc:
+      - Linear:
+          in_features: 32
+          out_features: 512
+        activation: ReLU
+      - Linear:
+          in_features: 512
+          out_features: 1024
+        activation: ReLU
+      - Linear:
+          in_features: 1024
+          out_features: 2048
+        activation: ReLU
+      - Linear:
+          in_features: 2048
+          out_features: 25088
+        activation: ReLU
+
+    decoder:
+      - ConvTranspose2d:
+          in_channels: 512
+          out_channels: 256
+          kernel_size: 3
+          stride: 2
+        activation: ReLU
+      - ConvTranspose2d:
+          in_channels: 256
+          out_channels: 128
+          kernel_size: 3
+          stride: 2
+        activation: ReLU
+      - ConvTranspose2d:
+          in_channels: 128
+          out_channels: 64
+          kernel_size: 3
+          stride: 2
+        activation: ReLU
+      - Upsample:
+          scale_factor: 2
+      - ConvTranspose2d:
+          in_channels: 64
+          out_channels: 32
+          kernel_size: 3
+          stride: 2
+        activation: ReLU
+      - ConvTranspose2d:
+          in_channels: 32
+          out_channels: 3
+          kernel_size: 3
+          stride: 2
+      - Upsample:
+          size: 512
+        activation: ReLU
+
+  optimizers:
+    vae:
+      Adam:
+        lr: 0.0001
+        weight_decay: 0.0001
