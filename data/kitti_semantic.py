@@ -1,5 +1,6 @@
 import os
 import cv2
+import random
 from glob import glob
 from os.path import join
 
@@ -10,9 +11,11 @@ from torch.utils.data import Dataset
 class Kitti360Semantic(Dataset):
 	def __init__(self, data_dir:str, sample_size:int, rgb:bool, crop_size:int):
 		if rgb:
-			self.data = glob(join(data_dir, '*', 'semantic_rgb', '*.png'))[:sample_size]
+			self.data = glob(join(data_dir, '*', 'semantic_rgb', '*.png'))
 		else:
-			self.data = glob(join(data_dir, '*', 'semantic', '*.png'))[:sample_size]
+			self.data = glob(join(data_dir, '*', 'semantic', '*.png'))
+		random.shuffle(self.data)
+		self.data = self.data[:sample_size]
 		self.rgb = rgb
 		self.crop_size = crop_size
 
