@@ -30,16 +30,12 @@ model:
           out_channels: 32
           kernel_size: 3
           stride: 2
-      - BatchNorm2d:
-          num_features: 32
         activation: ReLU
       - Conv2d:
           in_channels: 32
           out_channels: 64
           kernel_size: 3
           stride: 2
-      - BatchNorm2d:
-          num_features: 64
         activation: ReLU
       - MaxPool2d:
           kernel_size: 2
@@ -49,24 +45,18 @@ model:
           out_channels: 128
           kernel_size: 3
           stride: 2
-      - BatchNorm2d:
-          num_features: 128
         activation: ReLU
       - Conv2d:
           in_channels: 128
           out_channels: 256
           kernel_size: 3
           stride: 2
-      - BatchNorm2d:
-          num_features: 256
         activation: ReLU
       - Conv2d:
           in_channels: 256
           out_channels: 512
           kernel_size: 3
           stride: 2
-      - BatchNorm2d:
-          num_features: 512
         activation: ReLU
 
     encoder_fc:
@@ -122,24 +112,18 @@ model:
           out_channels: 256
           kernel_size: 3
           stride: 2
-      - BatchNorm2d:
-          num_features: 256
         activation: ReLU
       - ConvTranspose2d:
           in_channels: 256
           out_channels: 128
           kernel_size: 3
           stride: 2
-      - BatchNorm2d:
-          num_features: 128
         activation: ReLU
       - ConvTranspose2d:
           in_channels: 128
           out_channels: 64
           kernel_size: 3
           stride: 2
-      - BatchNorm2d:
-          num_features: 64
         activation: ReLU
       - Upsample:
           scale_factor: 2
@@ -148,8 +132,6 @@ model:
           out_channels: 32
           kernel_size: 3
           stride: 2
-      - BatchNorm2d:
-          num_features: 32
         activation: ReLU
       - ConvTranspose2d:
           in_channels: 32
