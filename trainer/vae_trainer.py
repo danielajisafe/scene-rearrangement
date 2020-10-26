@@ -3,6 +3,7 @@ from collections import defaultdict, OrderedDict
 
 import wandb
 import torch
+import numpy as np
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
@@ -10,6 +11,7 @@ from data import data
 from model import model
 from utils.utils import dict_to_device
 from losses.losses import mse, KL
+from visualization import wandb_utils
 
 
 class VAETrainer(object):
@@ -71,6 +73,15 @@ class VAETrainer(object):
         loss.backward()
         self.vae_opt.step()
 
+    def _aggregate_losses(self, losses):
+        for key in losses:
+            losses[key] = np.mean(losses[key])
+        return losses
+
+    def _log_epoch_summary(self, epochID, mode, losses):
+        if self.exp_cfg.wandb:
+            wandb_utils.log_epoch_summary(epochID, mode, losses)
+
     def _epoch(self, mode:str, epochID: int):
         if mode.__eq__('train'):
             self.model.train()
@@ -78,6 +89,8 @@ class VAETrainer(object):
             self.model.eval()
         data_iter = iter(self.dataloaders[mode]["kitti360_semantic"])
         iterator = tqdm(range(len(self.dataloaders[mode]["kitti360_semantic"])), dynamic_ncols=True)
+
+        losses = defaultdict(list)
 
         for i in iterator:
             batch_data = dict_to_device(next(data_iter), self.device)
@@ -91,6 +104,13 @@ class VAETrainer(object):
 
             iterator.set_description("V: {} | Epoch: {} | {} | Loss: {:.4f}".format(self.exp_cfg.cfg_file,
                 epochID, mode, loss.item()), refresh=True)
+
+            losses['total_loss'].append(loss.item())
+            losses['reconstruction_loss'].append(reconst_loss.item())
+            losses['KL-divergence'].append(kld.item())
+
+        losses = self._aggregate_losses(losses)
+        self._log_epoch_summary(epochID, mode, losses)
 
     def train(self):
         for epochID in range(self.model_cfg.epochs):
