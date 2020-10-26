@@ -6,10 +6,10 @@ experiment:
 data:
   sources:
     - kitti360_semantic:
-        train: /home/namrata/projects/data/kitti-360/data_2d_semantics/train
+        train: /media/namrata/Data/data/kitti-360/data_2d_semantics/train
         val: path to folder containing validation data"
         test: path to folder containing test data
-        batch_size: 1
+        batch_size: 8
         sample_size: null
         rgb: False
         crop_size: 512
@@ -28,50 +28,48 @@ model:
           out_channels: 32
           kernel_size: 3
           stride: 2
-          padding: 1
       - BatchNorm2d:
           num_features: 32
-        activation: LeakyReLU
+        activation: ReLU
       - Conv2d:
           in_channels: 32
           out_channels: 64
           kernel_size: 3
           stride: 2
-          padding: 1
       - BatchNorm2d:
           num_features: 64
-        activation: LeakyReLU
+        activation: ReLU
+      - MaxPool2d:
+          kernel_size: 2
+          stride: 2
       - Conv2d:
           in_channels: 64
           out_channels: 128
           kernel_size: 3
           stride: 2
-          padding: 1
       - BatchNorm2d:
           num_features: 128
-        activation: LeakyReLU
+        activation: ReLU
       - Conv2d:
           in_channels: 128
           out_channels: 256
           kernel_size: 3
           stride: 2
-          padding: 1
       - BatchNorm2d:
           num_features: 256
-        activation: LeakyReLU
+        activation: ReLU
       - Conv2d:
           in_channels: 256
           out_channels: 512
           kernel_size: 3
           stride: 2
-          padding: 1
       - BatchNorm2d:
           num_features: 512
-        activation: LeakyReLU
+        activation: ReLU
 
     encoder_fc:
       - Linear:
-          in_features: 131072
+          in_features: 25088
           out_features: 2048
         activation: ReLU
         dropout: 0.5
@@ -113,7 +111,7 @@ model:
         activation: ReLU
       - Linear:
           in_features: 2048
-          out_features: 131072
+          out_features: 25088
         activation: ReLU
 
     decoder:
@@ -122,57 +120,42 @@ model:
           out_channels: 256
           kernel_size: 3
           stride: 2
-          padding: 1
-          output_padding: 1
       - BatchNorm2d:
           num_features: 256
-        activation: LeakyReLU
+        activation: ReLU
       - ConvTranspose2d:
           in_channels: 256
           out_channels: 128
           kernel_size: 3
           stride: 2
-          padding: 1
-          output_padding: 1
       - BatchNorm2d:
           num_features: 128
-        activation: LeakyReLU
+        activation: ReLU
       - ConvTranspose2d:
           in_channels: 128
           out_channels: 64
           kernel_size: 3
           stride: 2
-          padding: 1
-          output_padding: 1
       - BatchNorm2d:
           num_features: 64
-        activation: LeakyReLU
+        activation: ReLU
       - ConvTranspose2d:
           in_channels: 64
           out_channels: 32
           kernel_size: 3
           stride: 2
-          padding: 1
-          output_padding: 1
       - BatchNorm2d:
           num_features: 32
-        activation: LeakyReLU
+        activation: ReLU
       - ConvTranspose2d:
-          in_channels: 32
-          out_channels: 32
-          kernel_size: 3
-          stride: 2
-          padding: 1
-          output_padding: 1
-      - BatchNorm2d:
-          num_features: 32
-        activation: LeakyReLU
-      - Conv2d:
           in_channels: 32
           out_channels: 1
           kernel_size: 3
-          padding: 1
+          stride: 2
+      - Upsample:
+          size: 512
         activation: Tanh
+
   optimizers:
     vae:
       Adam:

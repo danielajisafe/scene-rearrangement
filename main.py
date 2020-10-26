@@ -10,13 +10,13 @@ from utils.utils import seed_everything
 if __name__=="__main__":
     seed_everything(seed=0, harsh=False)
     parser = argparse.ArgumentParser(
-        description="Mesh Reconstruction Training Zoo", allow_abbrev=False
+        description="Scene Rearrangement Training", allow_abbrev=False
     )
     parser.add_argument(
         "-v",
         "--version",
         type=str,
-        default="default.yml",
+        default="vae_test.yml",
         help="name of the config file to use"
         )
     parser.add_argument(

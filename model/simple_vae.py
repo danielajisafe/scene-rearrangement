@@ -46,7 +46,7 @@ class VAE(BaseVAE):
 
     def decode(self, z):
         result = self.decoder_fc(z)
-        result = result.view(-1, 512, 16, 16)
+        result = result.view(-1, 512, 7, 7)
         result = self.decoder(result)
 
         return result
