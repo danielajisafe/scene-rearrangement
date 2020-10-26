@@ -9,8 +9,8 @@ data:
         val: path to folder containing validation data
         test: path to folder containing test data
         batch_size: 8
-        sample_size: 100
-        rgb: False
+        sample_size: 1000
+        rgb: True
         crop_size: 512
   num_workers: 8
 
@@ -23,7 +23,7 @@ model:
   network:
     encoder:
       - Conv2d:
-          in_channels: 1
+          in_channels: 3
           out_channels: 32
           kernel_size: 3
           stride: 2
@@ -150,12 +150,12 @@ model:
         activation: ReLU
       - ConvTranspose2d:
           in_channels: 32
-          out_channels: 1
+          out_channels: 3
           kernel_size: 3
           stride: 2
       - Upsample:
           size: 512
-        activation: Tanh
+        activation: ReLU
 
   optimizers:
     vae:

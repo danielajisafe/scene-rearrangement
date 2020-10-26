@@ -28,7 +28,7 @@ if __name__=="__main__":
         help="GPU ID"
         )
     parser.add_argument(
-        "-w", "--wandb", action="store_true", help="Log to wandb or not"
+        "-w", "--wandb", action="store_true", help="Log to wandb"
     )
     (args, unknown_args) = parser.parse_known_args()
 

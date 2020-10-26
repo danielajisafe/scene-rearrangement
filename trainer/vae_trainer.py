@@ -109,6 +109,9 @@ class VAETrainer(object):
             losses['reconstruction_loss'].append(reconst_loss.item())
             losses['KL-divergence'].append(kld.item())
 
+            if self.exp_cfg.wandb and i == 0:
+                wandb_utils.visualize_images(epochID, mode, batch_data['mask'], model_out.reconst)
+
         losses = self._aggregate_losses(losses)
         self._log_epoch_summary(epochID, mode, losses)
 
