@@ -5,6 +5,13 @@ from torch.nn import functional as F
 def mse(x, y):
 	return F.mse_loss(x, y)
 
+def mae(x, y):
+	return F.l1_loss(x, y)
+
+def cross_entropy(x, y):
+	return F.cross_entropy(x, y.squeeze(1).long())
+
+
 def KL(mu, log_var):
 	'''
 	KL divergence between N(mu, sigma) and N(0, 1)
