@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from data import data
 from model import model
 from utils.utils import dict_to_device, detach_2_np
-from losses.losses import mse, KL
+from losses.losses import *
 from visualization import wandb_utils
 
 
@@ -24,8 +24,8 @@ class VAETrainer(object):
 
         self._setup_dataloaders()
         self.model = model.factory.create(self.model_cfg.model_key, **{"model_cfg": self.model_cfg}).to(self.device)
-        # if self.exp_cfg.wandb:
-        #     wandb.watch(self.model)
+        if self.exp_cfg.wandb:
+            wandb.watch(self.model)
         self._setup_optimizers()
 
     def _setup_dataloaders(self):
@@ -101,7 +101,7 @@ class VAETrainer(object):
                 with torch.no_grad():
                     model_out = self.model(batch_data["mask"])
 
-            reconst_loss = mse(model_out.reconst, batch_data['mask'])
+            reconst_loss = eval(self.model_cfg.reconstruction_loss)(model_out.reconst, batch_data['mask'])
             kld = KL(model_out.mu, model_out.log_var)
 
             loss = self.model_cfg.loss_weights['reconstruction'] * reconst_loss \
@@ -110,7 +110,7 @@ class VAETrainer(object):
             if mode.__eq__('train'):
                 self._backprop(loss)
 
-            iterator.set_description("V: {} | Epoch: {} | {} | Loss: {:.4f}".format(self.exp_cfg.cfg_file,
+            iterator.set_description("V: {} | Epoch: {} | {} | Loss: {:.4f}".format(self.exp_cfg.version,
                 epochID, mode, loss.item()), refresh=True)
 
             losses['total_loss'].append(loss.item())
@@ -119,10 +119,13 @@ class VAETrainer(object):
 
             # visualize images from the first batch
             if self.exp_cfg.wandb and i == 0:
-                wandb_utils.visualize_images(epochID, mode, detach_2_np(batch_data['mask']), detach_2_np(model_out.reconst))
-
+                viz_gt = detach_2_np(batch_data['mask'])
+                viz_pred = detach_2_np(model_out.reconst)
+                
         losses = self._aggregate_losses(losses)
         self._log_epoch_summary(epochID, mode, losses)
+        if self.exp_cfg.wandb:
+            wandb_utils.visualize_images(epochID, mode, viz_gt, viz_pred)
 
     def train(self):
         for epochID in range(self.model_cfg.epochs):
