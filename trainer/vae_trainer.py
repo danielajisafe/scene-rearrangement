@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from data import data
 from model import model
 from utils.utils import dict_to_device, detach_2_np
-from losses.losses import mse, KL
+from losses.losses import *
 from visualization import wandb_utils
 
 
@@ -101,7 +101,7 @@ class VAETrainer(object):
                 with torch.no_grad():
                     model_out = self.model(batch_data["mask"])
 
-            reconst_loss = mse(model_out.reconst, batch_data['mask'])
+            reconst_loss = eval(self.model_cfg.reconstruction_loss)(model_out.reconst, batch_data['mask'])
             kld = KL(model_out.mu, model_out.log_var)
 
             loss = self.model_cfg.loss_weights['reconstruction'] * reconst_loss \
@@ -124,7 +124,8 @@ class VAETrainer(object):
                 
         losses = self._aggregate_losses(losses)
         self._log_epoch_summary(epochID, mode, losses)
-        wandb_utils.visualize_images(epochID, mode, viz_gt, viz_pred)
+        if self.exp_cfg.wandb:
+            wandb_utils.visualize_images(epochID, mode, viz_gt, viz_pred)
 
     def train(self):
         for epochID in range(self.model_cfg.epochs):
