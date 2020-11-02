@@ -19,6 +19,8 @@ model:
   modes:
     - train
   epochs: 100
+  n_classes: 58
+  # what loss to use for reconstruction? If "mse" or "mae" then change output channel to match input channel below
   reconstruction_loss: cross_entropy
   loss_weights:
     reconstruction: 1

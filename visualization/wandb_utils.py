@@ -24,7 +24,10 @@ def log_epoch_summary(epochID:int, mode:str, losses:dict):
 
 def visualize_images(epochID, mode, gt_image, pred_image):
     grid = np.zeros((8, gt_image.shape[1], gt_image.shape[2], gt_image.shape[3]))
-    pred_image = np.expand_dims(pred_image.argmax(axis=1), 1)
+
+    if pred_image.shape[1] != gt_image.shape[1]:
+        pred_image = np.expand_dims(pred_image.argmax(axis=1), 1)
+
     for i in range(grid.shape[0]//2):
         grid[i] = gt_image[i]
         grid[i+4] = pred_image[i]
