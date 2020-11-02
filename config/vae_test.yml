@@ -9,7 +9,7 @@ data:
         val: path to folder containing validation data
         test: path to folder containing test data
         batch_size: 32
-        sample_size: 10000
+        sample_size: null
         crop_size: 224
   num_workers: 10
 
@@ -22,7 +22,7 @@ model:
   reconstruction_loss: cross_entropy
   loss_weights:
     reconstruction: 1
-    kld: 1000
+    kld: 1
   network:
     encoder:
       - Conv2d:
@@ -30,13 +30,13 @@ model:
           out_channels: 32
           kernel_size: 3
           stride: 2
-        activation: ReLU
+        activation: LeakyReLU
       - Conv2d:
           in_channels: 32
           out_channels: 64
           kernel_size: 3
           stride: 2
-        activation: ReLU
+        activation: LeakyReLU
       - MaxPool2d:
           kernel_size: 2
           stride: 2
@@ -45,79 +45,77 @@ model:
           out_channels: 128
           kernel_size: 3
           stride: 2
-        activation: ReLU
+        activation: LeakyReLU
       - Conv2d:
           in_channels: 128
           out_channels: 256
           kernel_size: 3
           stride: 2
-        activation: ReLU
+        activation: LeakyReLU
       - Conv2d:
           in_channels: 256
           out_channels: 512
           kernel_size: 3
           stride: 2
-        activation: ReLU
+        activation: LeakyReLU
 
     encoder_fc:
       - Linear:
           in_features: 2048
           out_features: 1024
-        activation: ReLU
+        activation: LeakyReLU
         dropout: 0.5
       - Linear:
           in_features: 1024
           out_features: 512
-        activation: ReLU
+        activation: LeakyReLU
         dropout: 0.5
 
     fc_mu:
       - Linear:
           in_features: 512
           out_features: 32
-        activation: ReLU
+        activation: LeakyReLU
 
     fc_var:
       - Linear:
           in_features: 512
           out_features: 32
-        activation: ReLU
+        activation: LeakyReLU
 
     decoder_fc:
       - Linear:
           in_features: 32
           out_features: 512
-        activation: ReLU
+        activation: LeakyReLU
       - Linear:
           in_features: 512
           out_features: 1024
-        activation: ReLU
+        activation: LeakyReLU
       - Linear:
           in_features: 1024
           out_features: 2048
-        activation: ReLU
+        activation: LeakyReLU
 
     decoder:
       - ConvTranspose2d:
           in_channels: 512
           out_channels: 256
           kernel_size: 3
-          stride: 2
-        activation: ReLU
+          stride: 3
+        activation: LeakyReLU
       - ConvTranspose2d:
           in_channels: 256
           out_channels: 128
           kernel_size: 3
           stride: 2
-          output_padding: 1
-        activation: ReLU
+        activation: LeakyReLU
       - ConvTranspose2d:
           in_channels: 128
           out_channels: 64
           kernel_size: 3
           stride: 2
-          output_padding: 1
-        activation: ReLU
+        activation: LeakyReLU
       - Upsample:
           scale_factor: 2
       - ConvTranspose2d:
@@ -125,14 +123,12 @@ model:
           out_channels: 32
           kernel_size: 3
           stride: 2
-          output_padding: 1
-        activation: ReLU
+        activation: LeakyReLU
       - ConvTranspose2d:
           in_channels: 32
           out_channels: 58
           kernel_size: 3
           stride: 2
-          output_padding: 1
       - Upsample:
           size: 224
         activation: Sigmoid
