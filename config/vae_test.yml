@@ -8,7 +8,7 @@ data:
         train: /media/namrata/Data/data/kitti-360/data_2d_semantics/train
         val: path to folder containing validation data
         test: path to folder containing test data
-        batch_size: 16
+        batch_size: 32
         sample_size: 10000
         crop_size: 224
   num_workers: 10
@@ -22,7 +22,7 @@ model:
   reconstruction_loss: cross_entropy
   loss_weights:
     reconstruction: 1
-    kld: 10
+    kld: 1000
   network:
     encoder:
       - Conv2d:
