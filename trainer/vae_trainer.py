@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 
 from data import data
 from model import model
-from utils.utils import dict_to_device
+from utils.utils import dict_to_device, detach_2_np
 from losses.losses import mse, KL
 from visualization import wandb_utils
 
@@ -24,8 +24,8 @@ class VAETrainer(object):
 
         self._setup_dataloaders()
         self.model = model.factory.create(self.model_cfg.model_key, **{"model_cfg": self.model_cfg}).to(self.device)
-        if self.exp_cfg.wandb:
-            wandb.watch(self.model)
+        # if self.exp_cfg.wandb:
+        #     wandb.watch(self.model)
         self._setup_optimizers()
 
     def _setup_dataloaders(self):
@@ -94,14 +94,21 @@ class VAETrainer(object):
 
         for i in iterator:
             batch_data = dict_to_device(next(data_iter), self.device)
-            model_out = self.model(batch_data["mask"])
+
+            if mode.__eq__('train'):
+                model_out = self.model(batch_data["mask"])
+            else:
+                with torch.no_grad():
+                    model_out = self.model(batch_data["mask"])
 
             reconst_loss = mse(model_out.reconst, batch_data['mask'])
             kld = KL(model_out.mu, model_out.log_var)
 
             loss = self.model_cfg.loss_weights['reconstruction'] * reconst_loss \
                 + self.model_cfg.loss_weights['kld'] * kld
-            self._backprop(loss)
+
+            if mode.__eq__('train'):
+                self._backprop(loss)
 
             iterator.set_description("V: {} | Epoch: {} | {} | Loss: {:.4f}".format(self.exp_cfg.cfg_file,
                 epochID, mode, loss.item()), refresh=True)
@@ -110,8 +117,9 @@ class VAETrainer(object):
             losses['reconstruction_loss'].append(reconst_loss.item())
             losses['KL-divergence'].append(kld.item())
 
+            # visualize images from the first batch
             if self.exp_cfg.wandb and i == 0:
-                wandb_utils.visualize_images(epochID, mode, batch_data['mask'], model_out.reconst)
+                wandb_utils.visualize_images(epochID, mode, detach_2_np(batch_data['mask']), detach_2_np(model_out.reconst))
 
         losses = self._aggregate_losses(losses)
         self._log_epoch_summary(epochID, mode, losses)

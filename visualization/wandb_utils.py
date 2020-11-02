@@ -23,10 +23,10 @@ def log_epoch_summary(epochID:int, mode:str, losses:dict):
     wandb.log(logs, step=epochID)
 
 def visualize_images(epochID, mode, gt_image, pred_image):
-    grid = np.zeros_like(gt_image.cpu().numpy())
+    grid = np.zeros_like(gt_image)
     for i in range(0, gt_image.shape[0], 2):
-        grid[i] = gt_image[i].cpu().numpy()
-        grid[i+1] = pred_image[i].detach().cpu().numpy()
+        grid[i] = gt_image[i]
+        grid[i+1] = pred_image[i]
 
     grid = vutils.make_grid(torch.from_numpy(grid), nrow=2, normalize=True, scale_each=True)
 

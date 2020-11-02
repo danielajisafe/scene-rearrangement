@@ -12,7 +12,7 @@ data:
         sample_size: 1000
         rgb: True
         crop_size: 512
-  num_workers: 8
+  num_workers: 10
 
 model:
   model_key: simple_vae
