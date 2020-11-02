@@ -9,7 +9,7 @@ data:
         val: path to folder containing validation data
         test: path to folder containing test data
         batch_size: 32
-        sample_size: null
+        sample_size: 1000
         crop_size: 224
   num_workers: 10
 
@@ -22,7 +22,7 @@ model:
   reconstruction_loss: cross_entropy
   loss_weights:
     reconstruction: 1
-    kld: 1
+    kld: 0.0001
   network:
     encoder:
       - Conv2d:
