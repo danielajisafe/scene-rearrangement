@@ -35,3 +35,7 @@ def dict_to_device(d_ten: dict, device):
             d_ten[key] = d_ten[key].to(device)
 
     return d_ten
+
+def detach_2_np(x: torch.tensor):
+    return x.detach().cpu().numpy()
+    
