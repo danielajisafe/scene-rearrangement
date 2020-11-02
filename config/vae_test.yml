@@ -140,7 +140,7 @@ model:
           stride: 2
       - Upsample:
           size: 512
-        activation: ReLU
+        activation: Tanh
 
   optimizers:
     vae:

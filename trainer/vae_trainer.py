@@ -110,7 +110,7 @@ class VAETrainer(object):
             if mode.__eq__('train'):
                 self._backprop(loss)
 
-            iterator.set_description("V: {} | Epoch: {} | {} | Loss: {:.4f}".format(self.exp_cfg.cfg_file,
+            iterator.set_description("V: {} | Epoch: {} | {} | Loss: {:.4f}".format(self.exp_cfg.version,
                 epochID, mode, loss.item()), refresh=True)
 
             losses['total_loss'].append(loss.item())
@@ -119,10 +119,12 @@ class VAETrainer(object):
 
             # visualize images from the first batch
             if self.exp_cfg.wandb and i == 0:
-                wandb_utils.visualize_images(epochID, mode, detach_2_np(batch_data['mask']), detach_2_np(model_out.reconst))
-
+                viz_gt = detach_2_np(batch_data['mask'])
+                viz_pred = detach_2_np(model_out.reconst)
+                
         losses = self._aggregate_losses(losses)
         self._log_epoch_summary(epochID, mode, losses)
+        wandb_utils.visualize_images(epochID, mode, viz_gt, viz_pred)
 
     def train(self):
         for epochID in range(self.model_cfg.epochs):
