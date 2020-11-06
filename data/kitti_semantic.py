@@ -90,14 +90,14 @@ class Kitti360Classes(Dataset):
 		vehicles = binary_classification[vehicle_ids].sum(dim=0)
 
 		return {
-					"voids": voids,
-					"flats": flats,
-					"constructions": constructions,
-					"objects": objects,
-					"natures": natures,
-					"sky": sky,
-					"humans": humans,
-					"vehicles": vehicles
+			"voids": voids,
+			"flats": flats,
+			"constructions": constructions,
+			"objects": objects,
+			"natures": natures,
+			"sky": sky,
+			"humans": humans,
+			"vehicles": vehicles
 		}
 
 
