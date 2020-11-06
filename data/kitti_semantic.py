@@ -80,14 +80,14 @@ class Kitti360Classes(Dataset):
 		human_ids = [24, 25]
 		vehicle_ids = [26, 27, 28, 29, 30, 31, 32, 33]
 
-		voids = binary_classification[void_ids]
-		flats = binary_classification[flat_ids]
-		constructions = binary_classification[construction_ids]
-		objects = binary_classification[object_ids]
-		natures = binary_classification[nature_ids]
-		sky = binary_classification[sky_ids]
-		humans = binary_classification[human_ids]
-		vehicles = binary_classification[vehicle_ids]
+		voids = binary_classification[void_ids].sum(dim=-1)
+		flats = binary_classification[flat_ids].sum(dim=-1)
+		constructions = binary_classification[construction_ids].sum(dim=-1)
+		objects = binary_classification[object_ids].sum(dim=-1)
+		natures = binary_classification[nature_ids].sum(dim=-1)
+		sky = binary_classification[sky_ids].sum(dim=-1)
+		humans = binary_classification[human_ids].sum(dim=-1)
+		vehicles = binary_classification[vehicle_ids].sum(dim=-1)
 
 		return {
 					"voids": voids,
