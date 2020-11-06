@@ -66,10 +66,10 @@ class Kitti360Classes(Dataset):
 		zeros = torch.zeros(image.shape)
 		# zeros = torch.zeros((image.shape[0], image.shape[1], self.num_classes))
 
-		binary_classification = torch.ones((image.shape[0], image.shape[1], self.num_classes))
+		binary_classification = torch.ones((self.num_classes, image.shape[0], image.shape[1]))
 
 		for i in range(self.num_classes):
-			binary_classification[:, :, i] = torch.where(image==i, ones, zeros)
+			binary_classification[i] = torch.where(image==i, ones, zeros)
 
 		void_ids = [0, 1, 2, 3, 4, 5, 6, 42, 43, 44]
 		flat_ids = [7, 8, 9, 10]
