@@ -71,6 +71,8 @@ class Kitti360Classes(Dataset):
 		for i in range(self.num_classes):
 			binary_classification[i] = torch.where(image==i, ones, zeros)
 
+
+		# classes determined based on the labels provided by https://github.com/autonomousvision/kitti360Scripts/blob/master/kitti360scripts/helpers/labels.py
 		void_ids = [0, 1, 2, 3, 4, 5, 6, 42, 43, 44]
 		flat_ids = [7, 8, 9, 10]
 		construction_ids = [11, 12, 13, 14, 15, 16, 34, 35, 36]
