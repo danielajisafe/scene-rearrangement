@@ -90,8 +90,6 @@ class Kitti360Classes(Dataset):
 		sky = torch.unsqueeze(binary_classification[sky_ids].sum(dim=0), dim=0)
 		humans = torch.unsqueeze(binary_classification[human_ids].sum(dim=0), dim=0)
 		vehicles = torch.unsqueeze(binary_classification[vehicle_ids].sum(dim=0), dim=0)
-		
-		print(flats.shape)
 
 		return {
 			"voids": voids,
