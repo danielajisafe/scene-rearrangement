@@ -82,14 +82,14 @@ class Kitti360Classes(Dataset):
 		human_ids = [24, 25]
 		vehicle_ids = [26, 27, 28, 29, 30, 31, 32, 33]
 
-		voids = binary_classification[void_ids].sum(dim=0).expand(1, -1, -1)
-		flats = binary_classification[flat_ids].sum(dim=0).expand(1, -1, -1)
-		constructions = binary_classification[construction_ids].sum(dim=0).expand(1, -1, -1)
-		objects = binary_classification[object_ids].sum(dim=0).expand(1, -1, -1)
-		natures = binary_classification[nature_ids].sum(dim=0).expand(1, -1, -1)
-		sky = binary_classification[sky_ids].sum(dim=0).expand(1, -1, -1)
-		humans = binary_classification[human_ids].sum(dim=0).expand(1, -1, -1)
-		vehicles = binary_classification[vehicle_ids].sum(dim=0).expand(1, -1, -1)
+		voids = torch.unsqueeze(binary_classification[void_ids].sum(dim=0), dim=0)
+		flats = torch.unsqueeze(binary_classification[flat_ids].sum(dim=0), dim=0)
+		constructions = torch.unsqueeze(binary_classification[construction_ids].sum(dim=0), dim=0)
+		objects = torch.unsqueeze(binary_classification[object_ids].sum(dim=0), dim=0)
+		natures = torch.unsqueeze(binary_classification[nature_ids].sum(dim=0), dim=0)
+		sky = torch.unsqueeze(binary_classification[sky_ids].sum(dim=0), dim=0)
+		humans = torch.unsqueeze(binary_classification[human_ids].sum(dim=0), dim=0)
+		vehicles = torch.unsqueeze(binary_classification[vehicle_ids].sum(dim=0), dim=0)
 
 		return {
 			"voids": voids,
