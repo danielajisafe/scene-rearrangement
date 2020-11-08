@@ -4,8 +4,15 @@ experiment:
 
 data:
   sources:
-    - kitti360_semantic:
-        train: /media/namrata/Data/data/kitti-360/data_2d_semantics/train
+#    - kitti360_semantic:
+#        train: /home/willow/Documents/kitti/data_2d_semantics/train
+#        val: path to folder containing validation data
+#        test: path to folder containing test data
+#        batch_size: 32
+#        sample_size: 1000
+#        crop_size: 224
+    - kitti360_semantic_1hot:
+        train: ../Datasets/Kitti360/data_2d_semantics/train
         val: path to folder containing validation data
         test: path to folder containing test data
         batch_size: 32
