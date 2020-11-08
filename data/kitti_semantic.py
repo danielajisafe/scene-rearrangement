@@ -55,7 +55,7 @@ class Kitti360Semantic1Hot(Dataset):
 
 	def __getitem__(self, index):
 		image = cv2.imread(self.data[index])
-		image = cv2.resize(image, (self.crop_size, self.crop_size), interpolation=cv2.INTER_CUBIC)
+		image = cv2.resize(image, (self.crop_size, self.crop_size), interpolation=cv2.INTER_NEAREST)
 
 		image = torch.Tensor(image)
 
