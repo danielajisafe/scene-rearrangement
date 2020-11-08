@@ -58,19 +58,15 @@ class Kitti360Semantic1Hot(Dataset):
 		image = cv2.resize(image, (self.crop_size, self.crop_size), interpolation=cv2.INTER_NEAREST)
 
 		image = torch.Tensor(image)
+		image_semantic_id = image[:, :, 0]
 
-		image = torch.mean(image, dim=-1)
+		ones = torch.ones(image_semantic_id.shape)
+		zeros = torch.zeros(image_semantic_id.shape)
 
-		ones = torch.ones(image.shape)
-		# ones = torch.ones((image.shape[0], image.shape[1], self.num_classes))
-		zeros = torch.zeros(image.shape)
-		# zeros = torch.zeros((image.shape[0], image.shape[1], self.num_classes))
-
-		binary_classification = torch.ones((self.num_classes, image.shape[0], image.shape[1]))
+		image_semantic_1hot = torch.zeros(( self.num_classes, image.shape[0], image.shape[1]))	# shape = HxWxC
 
 		for i in range(self.num_classes):
-			binary_classification[i] = torch.where(image==i, ones, zeros)
-
+			image_semantic_1hot[i] = torch.where(image_semantic_id == i, ones, zeros)
 
 		# classes determined based on the labels provided by https://github.com/autonomousvision/kitti360Scripts/blob/master/kitti360scripts/helpers/labels.py
 		void_ids = [0, 1, 2, 3, 4, 5, 6, 42, 43, 44]
@@ -82,16 +78,18 @@ class Kitti360Semantic1Hot(Dataset):
 		human_ids = [24, 25]
 		vehicle_ids = [26, 27, 28, 29, 30, 31, 32, 33]
 
-		voids = torch.unsqueeze(binary_classification[void_ids].sum(dim=0), dim=0)
-		flats = torch.unsqueeze(binary_classification[flat_ids].sum(dim=0), dim=0)
-		constructions = torch.unsqueeze(binary_classification[construction_ids].sum(dim=0), dim=0)
-		objects = torch.unsqueeze(binary_classification[object_ids].sum(dim=0), dim=0)
-		natures = torch.unsqueeze(binary_classification[nature_ids].sum(dim=0), dim=0)
-		sky = torch.unsqueeze(binary_classification[sky_ids].sum(dim=0), dim=0)
-		humans = torch.unsqueeze(binary_classification[human_ids].sum(dim=0), dim=0)
-		vehicles = torch.unsqueeze(binary_classification[vehicle_ids].sum(dim=0), dim=0)
+		voids = image_semantic_1hot[void_ids].sum(dim=0, keepdim=True)
+		flats = image_semantic_1hot[flat_ids].sum(dim=0, keepdim=True)
+		constructions = image_semantic_1hot[construction_ids].sum(dim=0, keepdim=True)
+		objects = image_semantic_1hot[object_ids].sum(dim=0, keepdim=True)
+		natures = image_semantic_1hot[nature_ids].sum(dim=0, keepdim=True)
+		sky = image_semantic_1hot[sky_ids].sum(dim=0, keepdim=True)
+		humans = image_semantic_1hot[human_ids].sum(dim=0, keepdim=True)
+		vehicles = image_semantic_1hot[vehicle_ids].sum(dim=0, keepdim=True)
 
 		return {
+			"addr": self.data[index],
+			# "image": image,
 			"voids": voids,
 			"flats": flats,
 			"constructions": constructions,
