@@ -42,7 +42,7 @@ class Kitti360SemanticBuilder(object):
         )
         return self._instance
 
-class Kitti360Classes(Dataset):
+class Kitti360Semantic1Hot(Dataset):
 	def __init__(self, data_dir:str, sample_size:int, crop_size:int):
 		self.data = glob(join(data_dir, '*', 'semantic', '*.png'))
 		random.shuffle(self.data)
@@ -103,13 +103,13 @@ class Kitti360Classes(Dataset):
 		}
 
 
-class Kitti360ClassesBuilder(object):
+class Kitti360Semantic1HotBuilder(object):
     def __init__(self):
         self._instance = None
 
     def __call__(self, data_dir: str, crop_size: int, sample_size: int = None, **_ignored):
 
-        self._instance = Kitti360Classes(
+        self._instance = Kitti360Semantic1Hot(
             data_dir=data_dir,
             sample_size=sample_size,
             crop_size=crop_size
