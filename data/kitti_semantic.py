@@ -76,7 +76,7 @@ class Kitti360Semantic1Hot(Dataset):
 		void_ids = [0, 1, 2, 3, 4, 5, 6, 42, 43, 44]
 		flat_ids = [7, 8, 9, 10]
 		construction_ids = [11, 12, 13, 14, 15, 16, 34, 35, 36]
-		object_ids = [17, 18, 19, 20, 21, 22, 37, 38, 39, 40, 41]
+		object_ids = [17, 18, 19, 20, 37, 38, 39, 40, 41]
 		nature_ids = [21, 22]
 		sky_ids = [23]
 		human_ids = [24, 25]
