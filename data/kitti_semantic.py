@@ -89,7 +89,7 @@ class Kitti360Semantic1Hot(Dataset):
 
 		return {
 			"addr": self.data[index],
-			"mask":
+			"mask_in":
 				{
 					"voids": voids,
 					"flats": flats,
@@ -149,7 +149,8 @@ class Kitti360SemanticAllClasses(Dataset):
 
 		return {
 			"addr": self.data[index],
-			"mask": torch.FloatTensor(mask_selected_classes)
+			"mask_in": torch.FloatTensor(mask_selected_classes),
+			"mask_out": torch.FloatTensor(mask_selected_classes[-1:, :, :])
 		}
 
 
@@ -193,9 +194,9 @@ if __name__ == "__main_categories__":
 		plt.title('image', fontsize=25)
 
 		subplot_id = 332
-		for key in image_classified['mask'].keys():
+		for key in image_classified['mask_in'].keys():
 			plt.subplot(subplot_id)
-			plt.imshow(torch.squeeze(image_classified['mask'][key]))
+			plt.imshow(torch.squeeze(image_classified['mask_in'][key]))
 			plt.title(key, fontsize=25)
 			subplot_id += 1
 		plt.show()
@@ -226,7 +227,12 @@ if __name__ == "__main__":
 		subplot_id = 332
 		for i, class_title in enumerate(class_titles):
 			plt.subplot(subplot_id)
-			plt.imshow(image_classified['mask'][i])
+			plt.imshow(image_classified['mask_in'][i])
 			plt.title(class_title, fontsize=25)
 			subplot_id += 1
+
+		plt.subplot(339)
+		plt.imshow(image_classified['mask_out'][0])
+		plt.title(class_title, fontsize=25)
 		plt.show()
+
