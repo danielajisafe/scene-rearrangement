@@ -168,6 +168,38 @@ class Kitti360SemanticAllClassesBuilder(object):
         return self._instance
 
 
+if __name__ == "__main_categories__":
+	import numpy as np
+	import matplotlib.pyplot as plt
+	from matplotlib import rcParams
+	rcParams['figure.figsize'] = 20, 20
+
+	crop_size = 512
+	dataset = Kitti360Semantic1Hot(data_dir="../../Datasets/Kitti360/data_2d_semantics/train", sample_size=10,
+								   crop_size=crop_size)
+
+	print("len of dataset = {}".format(len(dataset)))
+
+	plot_titles = ['image', 'sky', 'constructions', 'flats', 'vegetation', 'terrain', 'person', 'car']
+	for i in range(1):
+		image_classified = dataset[np.random.randint(len(dataset))]
+		print('data address is ={}'.format(image_classified['addr']))
+
+		plt.subplot(331)
+		image = cv2.imread(
+			os.path.dirname(image_classified['addr']) + '_rgb/' + os.path.basename(image_classified['addr']))
+		image = cv2.resize(image, (crop_size, crop_size), interpolation=cv2.INTER_NEAREST)
+		plt.imshow(image)
+		plt.title('image', fontsize=25)
+
+		subplot_id = 332
+		for key in image_classified['mask'].keys():
+			plt.subplot(subplot_id)
+			plt.imshow(torch.squeeze(image_classified['mask'][key]))
+			plt.title(key, fontsize=25)
+			subplot_id += 1
+		plt.show()
+
 if __name__ == "__main__":
 	import numpy as np
 	import matplotlib.pyplot as plt
@@ -175,8 +207,10 @@ if __name__ == "__main__":
 	rcParams['figure.figsize'] = 20 ,20
 
 	crop_size = 512
-	dataset = Kitti360Semantic1Hot(data_dir="../../Datasets/Kitti360/data_2d_semantics/train", sample_size=10, crop_size=crop_size)
-
+	selected_classes = [23, 7, 8, 21, 22, 24, 26]
+	class_titles = ['sky', 'road', 'side walk', 'vegetation', 'terrain', 'person', 'car']
+	dataset = Kitti360SemanticAllClasses(data_dir="../../Datasets/Kitti360/data_2d_semantics/train", sample_size=100,
+										 crop_size=crop_size, selected_classes= selected_classes)
 	print("len of dataset = {}".format(len(dataset)))
 
 	for i in range(1):
@@ -189,35 +223,10 @@ if __name__ == "__main__":
 		plt.imshow(image)
 		plt.title('image', fontsize=25)
 
-		plt.subplot(332)
-		plt.imshow(torch.squeeze(image_classified['sky']))
-		plt.title('sky', fontsize=25)
-
-		plt.subplot(333)
-		plt.imshow(torch.squeeze(image_classified['constructions']))
-		plt.title('constructions', fontsize=25)
-
-		plt.subplot(334)
-		plt.imshow(torch.squeeze(image_classified['flats']))
-		plt.title('flats', fontsize=25)
-
-		plt.subplot(335)
-		plt.imshow(torch.squeeze(image_classified['natures']))
-		plt.title('natures', fontsize=25)
-
-		plt.subplot(336)
-		plt.imshow(torch.squeeze(image_classified['vehicles']))
-		plt.title('vehicles', fontsize=25)
-
-		plt.subplot(337)
-		plt.imshow(torch.squeeze(image_classified['humans']))
-		plt.title('humans', fontsize=25)
-
-		plt.subplot(338)
-		plt.imshow(torch.squeeze(image_classified['objects']))
-		plt.title('objects', fontsize=25)
-
-		plt.subplot(339)
-		plt.imshow(torch.squeeze(image_classified['voids']))
-		plt.title('voids', fontsize=25)
+		subplot_id = 332
+		for i, class_title in enumerate(class_titles):
+			plt.subplot(subplot_id)
+			plt.imshow(image_classified['mask'][i])
+			plt.title(class_title, fontsize=25)
+			subplot_id += 1
 		plt.show()
