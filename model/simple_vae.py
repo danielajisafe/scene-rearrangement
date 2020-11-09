@@ -48,7 +48,8 @@ class VAE(BaseVAE):
 
     def decode(self, z):
         result = self.decoder_fc(z)
-        result = result.view(-1, 512, 2, 2)
+        # result = result.view(-1, 512, 2, 2)
+        result = result.view(-1, 128, 2, 2)         # TODO fix this part to be nicer :)
         result = self.decoder(result)
 
         return result
