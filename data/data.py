@@ -1,4 +1,4 @@
-from data.kitti_semantic import Kitti360SemanticBuilder, Kitti360Semantic1HotBuilder
+from data.kitti_semantic import Kitti360SemanticBuilder, Kitti360Semantic1HotBuilder, Kitti360SemanticAllClassesBuilder
 
 class DataFactory(object):
     """Factory class to build new dataset objects
@@ -34,3 +34,4 @@ class DataFactory(object):
 factory = DataFactory()
 factory.register_builder("kitti360_semantic", Kitti360SemanticBuilder())
 factory.register_builder("kitti360_semantic_1hot", Kitti360Semantic1HotBuilder())
+factory.register_builder("Kitti360SemanticAllClasses", Kitti360SemanticAllClassesBuilder())
