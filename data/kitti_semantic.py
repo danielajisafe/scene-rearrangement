@@ -89,15 +89,17 @@ class Kitti360Semantic1Hot(Dataset):
 
 		return {
 			"addr": self.data[index],
-			# "image": image,
-			"voids": voids,
-			"flats": flats,
-			"constructions": constructions,
-			"objects": objects,
-			"natures": natures,
-			"sky": sky,
-			"humans": humans,
-			"vehicles": vehicles
+			"mask":
+				{
+					"voids": voids,
+					"flats": flats,
+					"constructions": constructions,
+					"objects": objects,
+					"natures": natures,
+					"sky": sky,
+					"humans": humans,
+					"vehicles": vehicles
+				}
 		}
 
 
