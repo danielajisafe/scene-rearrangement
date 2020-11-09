@@ -115,6 +115,52 @@ class Kitti360Semantic1HotBuilder(object):
         return self._instance
 
 
+
+class Kitti360SemanticAllClasses(Dataset):
+	def __init__(self, data_dir:str, sample_size:int, crop_size:int):
+		self.data = glob(join(data_dir, '*', 'semantic', '*.png'))
+		random.shuffle(self.data)
+		self.data = self.data[:sample_size]
+		self.crop_size = crop_size
+		self.num_classes = 45
+
+	def __len__(self):
+		return len(self.data)
+
+	def __getitem__(self, index):
+		image = cv2.imread(self.data[index])
+		image = cv2.resize(image, (self.crop_size, self.crop_size), interpolation=cv2.INTER_NEAREST)
+
+		image = torch.Tensor(image)
+		image_semantic_id = image[:, :, 0]
+
+		ones = torch.ones(image_semantic_id.shape)
+		zeros = torch.zeros(image_semantic_id.shape)
+
+		image_semantic_1hot = torch.zeros(( self.num_classes, image.shape[0], image.shape[1]))	# shape = HxWxC
+
+		classes = []
+
+		for i in range(self.num_classes):
+			classes.append(torch.where(image_semantic_id == i, ones, zeros))
+
+		return classes
+
+
+class Kitti360SemanticAllClassesBuilder(object):
+    def __init__(self):
+        self._instance = None
+
+    def __call__(self, data_dir: str, crop_size: int, sample_size: int = None, **_ignored):
+
+        self._instance = Kitti360SemanticAllClasses(
+            data_dir=data_dir,
+            sample_size=sample_size,
+            crop_size=crop_size
+        )
+        return self._instance
+
+
 if __name__ == "__main__":
 	import numpy as np
 	import matplotlib.pyplot as plt
