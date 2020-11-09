@@ -71,7 +71,7 @@ class Kitti360Semantic1Hot(Dataset):
 		# classes determined based on the labels provided by https://github.com/autonomousvision/kitti360Scripts/blob/master/kitti360scripts/helpers/labels.py
 		road_ids = [7]
 		vehicle_ids = [26, 27, 28, 29, 30, 32, 33]
-		background_ids = [i for i in list(range(50)) if (i not in road_ids and i not in vehicle_ids_ids)]
+		background_ids = [i for i in list(range(50)) if (i not in road_ids and i not in vehicle_ids)]
 
 
 		road = image_semantic_1hot[road_ids].sum(dim=0, keepdim=True)
