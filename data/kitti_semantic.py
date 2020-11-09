@@ -117,12 +117,13 @@ class Kitti360Semantic1HotBuilder(object):
 
 
 class Kitti360SemanticAllClasses(Dataset):
-	def __init__(self, data_dir:str, sample_size:int, crop_size:int):
+	def __init__(self, data_dir:str, sample_size:int, crop_size:int, selected_classes:list):
 		self.data = glob(join(data_dir, '*', 'semantic', '*.png'))
 		random.shuffle(self.data)
 		self.data = self.data[:sample_size]
 		self.crop_size = crop_size
-		self.num_classes = 45
+		self.selected_classes = selected_classes
+		self.num_classes = len(self.selected_classes)
 
 	def __len__(self):
 		return len(self.data)
@@ -137,26 +138,30 @@ class Kitti360SemanticAllClasses(Dataset):
 		ones = torch.ones(image_semantic_id.shape)
 		zeros = torch.zeros(image_semantic_id.shape)
 
-		image_semantic_1hot = torch.zeros(( self.num_classes, image.shape[0], image.shape[1]))	# shape = HxWxC
+		mask_selected_classes = torch.zeros(( self.num_classes, image.shape[0], image.shape[1]))	# shape = HxWxC
 
-		classes = []
+		# for i in range(self.num_classes):
+		# 	classes.append(torch.where(image_semantic_id == i, ones, zeros))
+		for i, selected_class in enumerate(self.selected_classes):
+			mask_selected_classes[i] = torch.where(image_semantic_id == selected_class, ones, zeros)
 
-		for i in range(self.num_classes):
-			classes.append(torch.where(image_semantic_id == i, ones, zeros))
-
-		return classes
+		return {
+			"addr": self.data[index],
+			"mask": torch.FloatTensor(mask_selected_classes)
+		}
 
 
 class Kitti360SemanticAllClassesBuilder(object):
     def __init__(self):
         self._instance = None
 
-    def __call__(self, data_dir: str, crop_size: int, sample_size: int = None, **_ignored):
+    def __call__(self, data_dir: str, crop_size: int, sample_size: int = None, selected_classes: list = None, **_ignored):
 
         self._instance = Kitti360SemanticAllClasses(
             data_dir=data_dir,
             sample_size=sample_size,
-            crop_size=crop_size
+            crop_size=crop_size,
+			selected_classes=selected_classes,
         )
         return self._instance
 
