@@ -69,35 +69,22 @@ class Kitti360Semantic1Hot(Dataset):
 			image_semantic_1hot[i] = torch.where(image_semantic_id == i, ones, zeros)
 
 		# classes determined based on the labels provided by https://github.com/autonomousvision/kitti360Scripts/blob/master/kitti360scripts/helpers/labels.py
-		void_ids = [0, 1, 2, 3, 4, 5, 6, 42, 43, 44]
-		flat_ids = [7, 8, 9, 10]
-		construction_ids = [11, 12, 13, 14, 15, 16, 34, 35, 36]
-		object_ids = [17, 18, 19, 20, 37, 38, 39, 40, 41]
-		nature_ids = [21, 22]
-		sky_ids = [23]
-		human_ids = [24, 25]
-		vehicle_ids = [26, 27, 28, 29, 30, 31, 32, 33]
+		road_ids = [7]
+		vehicle_ids = [26, 27, 28, 29, 30, 32, 33]
+		background_ids = [i for i in list(range(50)) if (i not in road and i not in vehicle_ids)]
 
-		voids = image_semantic_1hot[void_ids].sum(dim=0, keepdim=True)
-		flats = image_semantic_1hot[flat_ids].sum(dim=0, keepdim=True)
-		constructions = image_semantic_1hot[construction_ids].sum(dim=0, keepdim=True)
-		objects = image_semantic_1hot[object_ids].sum(dim=0, keepdim=True)
-		natures = image_semantic_1hot[nature_ids].sum(dim=0, keepdim=True)
-		sky = image_semantic_1hot[sky_ids].sum(dim=0, keepdim=True)
-		humans = image_semantic_1hot[human_ids].sum(dim=0, keepdim=True)
-		vehicles = image_semantic_1hot[vehicle_ids].sum(dim=0, keepdim=True)
+
+		road = image_semantic_1hot[road_ids].sum(dim=0, keepdim=True)
+		vehicle = image_semantic_1hot[vehicle_ids].sum(dim=0, keepdim=True)
+		background = image_semantic_1hot[background_ids].sum(dim=0, keepdim=True)
+		
 
 		return {
 			"addr": self.data[index],
 			# "image": image,
-			"voids": voids,
-			"flats": flats,
-			"constructions": constructions,
-			"objects": objects,
-			"natures": natures,
-			"sky": sky,
-			"humans": humans,
-			"vehicles": vehicles
+			"road": road,
+			"vehicle": vehicle,
+			"background": background,
 		}
 
 
