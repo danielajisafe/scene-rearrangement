@@ -14,6 +14,8 @@ class VAE(BaseVAE):
         super(VAE, self).__init__()
 
     def _build_encoder(self):
+        # if "encoder_input" in self.cfg.network:
+        #     self.encoder_input = Network(self.cfg.network["encoder_input"])
         self.encoder = Network(self.cfg.network["encoder"])
         self.encoder_fc = Network(self.cfg.network["encoder_fc"])
         self.fc_mu = Network(self.cfg.network["fc_mu"])
