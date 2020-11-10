@@ -69,7 +69,7 @@ class Kitti360Semantic1Hot(Dataset):
 			image_semantic_1hot[i] = torch.where(image_semantic_id == i, ones, zeros)
 
 		# classes determined based on the labels provided by https://github.com/autonomousvision/kitti360Scripts/blob/master/kitti360scripts/helpers/labels.py
-		road_ids = [7]
+		road_ids = [7, 9]
 		vehicle_ids = [26, 27, 28, 29, 30, 32, 33]
 		background_ids = [i for i in list(range(45)) if (i not in road_ids and i not in vehicle_ids)]
 
