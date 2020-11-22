@@ -101,7 +101,7 @@ class MultiStageVAE(BaseVAE):
                                                nn.Upsample(scale_factor= 2)))                           # out shape = 16x54x54
             self.decoder3.append(nn.Sequential(nn.ConvTranspose2d(16 * (vae_stage+1), 8, k_size, stride), # out shape = 8x109x109
                                                nn.LeakyReLU(),))
-            self.decoder4.append(nn.Sequential(nn.ConvTranspose2d(8 * (vae_stage+1), 4, k_size, stride),   # out shape = 4x219x219
+            self.decoder4.append(nn.Sequential(nn.ConvTranspose2d(8 * (vae_stage+1), 1, k_size, stride),   # out shape = 1x219x219
                                                nn.Upsample(size=224),  # TODO need better final size maybe? using the crop size input
                                                nn.Sigmoid()))
 
