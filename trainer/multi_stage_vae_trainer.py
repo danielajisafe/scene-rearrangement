@@ -62,7 +62,7 @@ class MultiStageVAETrainer(object):
 
     def _setup_optimizers(self):
         vae_params = list(self.model.parameters())
-        vae_optim_cfg = self.model_cfg.optimizers["vae"]
+        vae_optim_cfg = self.model_cfg.optimizers["multi_stage_vae"]
 
         self.vae_opt =  eval(
             "optim.{}(vae_params, **{})".format([*vae_optim_cfg.keys()][0], [*vae_optim_cfg.values()][0])

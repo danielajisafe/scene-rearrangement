@@ -54,11 +54,11 @@ class MultiStageVAE(BaseVAE):
         # -------------------------------------
         k_size = 3
         stride = 2
-        self.encoder0 = [Network(self.cfg.network["encoder0"]) for i in range(self.cfg.n_classes)] # out shape = 16x111x111
-        self.encoder1 = []
-        self.encoder2 = []
-        self.encoder3 = []
-        self.encoder4 = []
+        self.encoder0 = nn.ModuleList([Network(self.cfg.network["encoder0"]) for i in range(self.cfg.n_classes)]) # out shape = 16x111x111
+        self.encoder1 = nn.ModuleList([])
+        self.encoder2 = nn.ModuleList([])
+        self.encoder3 = nn.ModuleList([])
+        self.encoder4 = nn.ModuleList([])
         for vae_stage in range(self.cfg.n_classes): # a for loop to build the encoders of all our vae stages
             self.encoder1.append(nn.Sequential(nn.Conv2d(16 * (vae_stage+1), 32, k_size, stride),  # out shape = 32x27x27
                                                nn.LeakyReLU(),
@@ -86,11 +86,11 @@ class MultiStageVAE(BaseVAE):
         k_size = 3
         stride = 2
 
-        self.decoder0 = []
-        self.decoder1 = []
-        self.decoder2 = []
-        self.decoder3 = []
-        self.decoder4 = []
+        self.decoder0 = nn.ModuleList([])
+        self.decoder1 = nn.ModuleList([])
+        self.decoder2 = nn.ModuleList([])
+        self.decoder3 = nn.ModuleList([])
+        self.decoder4 = nn.ModuleList([])
         for vae_stage in range(self.cfg.n_classes): # a for loop to build the decoders of all our vae stages
             self.decoder0.append(nn.Sequential(nn.ConvTranspose2d(128 * (vae_stage+1), 64, k_size, 3),  # out shape = 64x6x6
                                                nn.LeakyReLU(),))
