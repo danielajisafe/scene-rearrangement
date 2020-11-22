@@ -63,10 +63,12 @@ class Kitti360Semantic1Hot(Dataset):
 		ones = torch.ones(image_semantic_id.shape)
 		zeros = torch.zeros(image_semantic_id.shape)
 
-		image_semantic_1hot = torch.zeros(( self.num_classes, image.shape[0], image.shape[1]))	# shape = HxWxC
+		image_semantic_1hot = torch.zeros(( self.num_classes, image.shape[0], image.shape[1]))	# shape = CxHxW
+		mask_out = torch.zeros((image.shape[0], image.shape[1]))	# shape = HxW
 
 		for i in range(self.num_classes):
 			image_semantic_1hot[i] = torch.where(image_semantic_id == i, ones, zeros)
+			mask_out += i*image_semantic_1hot[i]	# creating the index mask needed for loss calculation
 
 		# classes determined based on the labels provided by https://github.com/autonomousvision/kitti360Scripts/blob/master/kitti360scripts/helpers/labels.py
 		road_ids = [7, 9]
@@ -78,13 +80,14 @@ class Kitti360Semantic1Hot(Dataset):
 		vehicle = image_semantic_1hot[vehicle_ids].sum(dim=0, keepdim=True)
 		background = image_semantic_1hot[background_ids].sum(dim=0, keepdim=True)
 
-		# fron to back
-		mask = torch.cat([vehicle, road, background], dim=0)
+		# front to back
+		mask_in = torch.cat([vehicle, road, background], dim=0)
 
 		return {
 			"addr": self.data[index],
 			# "image": image,
-			"mask": torch.FloatTensor(mask),
+			"mask_in": torch.FloatTensor(mask_in),
+			"mask_out": torch.FloatTensor(mask_out),
 			"mask_per_category": {
 				"road": road,
 				"vehicle": vehicle,
@@ -183,7 +186,7 @@ if __name__ == "__main__":
 		plt.title('image', fontsize=25)
 
 		plt.subplot(232)
-		plt.imshow(image_classified['mask'].permute(1,2,0))
+		plt.imshow(image_classified['mask_in'].permute(1,2,0))
 		plt.title('mask', fontsize=25)
 
 		subplot_id = 234
