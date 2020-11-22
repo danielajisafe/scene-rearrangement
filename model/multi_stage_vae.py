@@ -118,7 +118,7 @@ class MultiStageVAE(BaseVAE):
         result_encoder3 = []
         result_encoder4 = []
         for vae_stage in range(self.cfg.n_classes): # looping to get the outputs of all encoder
-            result_encoder0.append(self.encoder0[vae_stage](input[:, vae_stage, :, :]))
+            result_encoder0.append(self.encoder0[vae_stage](input[:, vae_stage:vae_stage+1, :, :]))
             result_encoder1.append(self.encoder1[vae_stage](torch.cat(result_encoder0, dim=1)))
             result_encoder2.append(self.encoder2[vae_stage](torch.cat(result_encoder1, dim=1)))
             result_encoder3.append(self.encoder3[vae_stage](torch.cat(result_encoder2, dim=1)))
