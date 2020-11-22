@@ -96,12 +96,12 @@ class VAETrainer(object):
             batch_data = dict_to_device(next(data_iter), self.device)
 
             if mode.__eq__('train'):
-                model_out = self.model(batch_data["mask_in"])
+                model_out = self.model(batch_data["mask"])
             else:
                 with torch.no_grad():
-                    model_out = self.model(batch_data["mask_in"])
+                    model_out = self.model(batch_data["mask"])
 
-            reconst_loss = eval(self.model_cfg.reconstruction_loss)(model_out.reconst, batch_data['mask_out'])
+            reconst_loss = eval(self.model_cfg.reconstruction_loss)(model_out.reconst, batch_data['mask'])
             kld = KL(model_out.mu, model_out.log_var)
 
             loss = self.model_cfg.loss_weights['reconstruction'] * reconst_loss \
@@ -119,7 +119,7 @@ class VAETrainer(object):
 
             # visualize images from the first batch
             if self.exp_cfg.wandb and i == 0:
-                viz_gt = detach_2_np(batch_data['mask_out'])
+                viz_gt = detach_2_np(batch_data['mask'])
                 viz_pred = detach_2_np(model_out.reconst)
                 
         losses = self._aggregate_losses(losses)
