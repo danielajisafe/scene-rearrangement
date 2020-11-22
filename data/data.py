@@ -34,4 +34,4 @@ class DataFactory(object):
 factory = DataFactory()
 factory.register_builder("kitti360_semantic", Kitti360SemanticBuilder())
 factory.register_builder("kitti360_semantic_1hot", Kitti360Semantic1HotBuilder())
-factory.register_builder("Kitti360SemanticAllClasses", Kitti360SemanticAllClassesBuilder())
+factory.register_builder("Kitti360_Semantic_AllClasses", Kitti360SemanticAllClassesBuilder())

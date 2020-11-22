@@ -4,7 +4,7 @@ experiment:
 
 data:
   sources:
-    - Kitti360SemanticAllClasses:
+    - kitti360_semantic_1hot:
         train: ../Datasets/Kitti360/data_2d_semantics/train
         val: path to folder containing validation data
         test: path to folder containing test data
