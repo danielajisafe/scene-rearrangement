@@ -10,7 +10,7 @@ data:
         test: path to folder containing test data
         batch_size: 32
         sample_size: 1000
-        crop_size: 56   #224
+        crop_size: 224
   num_workers: 10
 
 model:
@@ -28,9 +28,9 @@ model:
   network:
 
     encoder0:
-      - Conv2d:                  # image size  = 224x224      56x56
+      - Conv2d:
           in_channels: 1
-          out_channels: 16      # out shape = 16x111x111      27x27
+          out_channels: 16      # out shape = 16x111x111
           kernel_size: 3
           stride: 2
         activation: LeakyReLU
@@ -38,41 +38,41 @@ model:
     encoder1:
       - Conv2d:
           in_channels: 16
-          out_channels: 32      # out shape = 32x55x55        13x13
+          out_channels: 32      # out shape = 32x55x55
           kernel_size: 3
           stride: 2
         activation: LeakyReLU
-      - MaxPool2d:              # out shape = 32x27x27        6x6
+      - MaxPool2d:              # out shape = 32x27x27
           kernel_size: 2
           stride: 2
 
     encoder2:
       - Conv2d:
           in_channels: 32
-          out_channels: 64      # out shape = 64x13x13        2x2
+          out_channels: 64      # out shape = 64x13x13
           kernel_size: 3
           stride: 2
         activation: LeakyReLU
 
-#    encoder3:
-#      - Conv2d:
-#          in_channels: 64
-#          out_channels: 128     # out shape = 128x6x6
-#          kernel_size: 3
-#          stride: 2
-#        activation: LeakyReLU
-#
-#    encoder4:
-#      - Conv2d:
-#          in_channels: 128
-#          out_channels: 128     # out shape = 128x2x2
-#          kernel_size: 3
-#          stride: 2
-#        activation: LeakyReLU
+    encoder3:
+      - Conv2d:
+          in_channels: 64
+          out_channels: 128     # out shape = 128x6x6
+          kernel_size: 3
+          stride: 2
+        activation: LeakyReLU
+
+    encoder4:
+      - Conv2d:
+          in_channels: 128
+          out_channels: 128     # out shape = 128x2x2
+          kernel_size: 3
+          stride: 2
+        activation: LeakyReLU
 
     encoder_fc:
       - Linear:
-          in_features: 256   # for 4 encoders use   =  512
+          in_features: 512
           out_features: 256
         activation: LeakyReLU
         dropout: 0.5
@@ -105,12 +105,12 @@ model:
         activation: LeakyReLU
       - Linear:
           in_features: 256
-          out_features: 256   # for 4 encoders use   =  512
+          out_features: 512
         activation: LeakyReLU
 
     decoder0:
       - ConvTranspose2d:
-          in_channels: 64      # in shape = 64x2x2
+          in_channels: 128      # in shape = 128x2x2
           out_channels: 64      # out shape = 64x6x6
           kernel_size: 3
           stride: 3
@@ -131,21 +131,21 @@ model:
         activation: LeakyReLU
       - Upsample:
           scale_factor: 2       # out shape = 16x54x54
-#    decoder3:
-#      - ConvTranspose2d:
-#          in_channels: 16
-#          out_channels: 8       # out shape = 8x109x109
-#          kernel_size: 3
-#          stride: 2
-#        activation: LeakyReLU
-#    decoder4:
-#      - ConvTranspose2d:
-#          in_channels: 8
-#          out_channels: 4       # out shape = 4x219x219
-#          kernel_size: 3
-#          stride: 2
-#      - Upsample:
-#          size: 224
+    decoder3:
+      - ConvTranspose2d:
+          in_channels: 16
+          out_channels: 8       # out shape = 8x109x109
+          kernel_size: 3
+          stride: 2
+        activation: LeakyReLU
+    decoder4:
+      - ConvTranspose2d:
+          in_channels: 8
+          out_channels: 4       # out shape = 4x219x219
+          kernel_size: 3
+          stride: 2
+      - Upsample:
+          size: 224
 #        activation: Sigmoid
 
   optimizers:
