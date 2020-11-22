@@ -102,10 +102,10 @@ class MultiStageVAETrainer(object):
                     model_out = self.model(batch_data["mask_in"])
 
             reconst_loss = eval(self.model_cfg.reconstruction_loss)(model_out.reconst, batch_data['mask_out'])
-            kld = KL(model_out.mu, model_out.log_var)
+            kld = [KL(model_out.mu[vae_stage], model_out.log_var[vae_stage]) for vae_stage in range(len(model_out.mu))] # separate Kld for each VAE
 
             loss = self.model_cfg.loss_weights['reconstruction'] * reconst_loss \
-                + self.model_cfg.loss_weights['kld'] * kld
+                + sum([self.model_cfg.loss_weights['kld'][vae_stage] * kld[vae_stage] for vae_stage in range(len(kld))])
 
             if mode.__eq__('train'):
                 self._backprop(loss)

@@ -24,7 +24,7 @@ model:
   reconstruction_loss: cross_entropy
   loss_weights:
     reconstruction: 1
-    kld: 0.0001
+    kld: [0.0001, 0.0001, 0.0001]  #for each object category. Currently shape = 3 = ['Vehicle', 'Road', 'Background']
   network:
 
     encoder0:
