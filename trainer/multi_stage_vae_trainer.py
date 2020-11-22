@@ -115,7 +115,8 @@ class MultiStageVAETrainer(object):
 
             losses['total_loss'].append(loss.item())
             losses['reconstruction_loss'].append(reconst_loss.item())
-            losses['KL-divergence'].append(kld.item())
+            for vae_stage in range(len(kld)):
+                losses['KL-divergence-{}'.format(vae_stage)].append(kld[vae_stage].item())
 
             # visualize images from the first batch
             if self.exp_cfg.wandb and i == 0:
