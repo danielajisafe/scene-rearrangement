@@ -14,7 +14,7 @@ from losses.losses import *
 from visualization import wandb_utils
 
 
-class VAETrainer(object):
+class MultiStageVAETrainer(object):
     def __init__(self, data_cfg, model_cfg, exp_cfg):
         self.data_cfg = data_cfg
         self.model_cfg = model_cfg
@@ -133,7 +133,7 @@ class VAETrainer(object):
                 self._epoch(mode, epochID)
 
 
-class VAETrainerBuilder(object):
+class MultiStageVAETrainerBuilder(object):
     """VAE Trainer Builder Class
     """
 
@@ -152,5 +152,5 @@ class VAETrainerBuilder(object):
             VAETrainer: Instantiated VAE trainer object
         """
         if not self._instance:
-            self._instance = VAETrainer(data_cfg=data_cfg, model_cfg=model_cfg, exp_cfg=exp_cfg)
+            self._instance = MultiStageVAETrainer(data_cfg=data_cfg, model_cfg=model_cfg, exp_cfg=exp_cfg)
         return self._instance

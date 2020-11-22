@@ -1,4 +1,5 @@
 from trainer.vae_trainer import VAETrainerBuilder
+from trainer.multi_stage_vae_trainer import MultiStageVAETrainerBuilder
 
 
 class TrainerFactory(object):
@@ -35,3 +36,4 @@ class TrainerFactory(object):
 
 factory = TrainerFactory()
 factory.register_builder("vae_trainer", VAETrainerBuilder())
+factory.register_builder("multi_stage_vae_trainer", MultiStageVAETrainerBuilder())
