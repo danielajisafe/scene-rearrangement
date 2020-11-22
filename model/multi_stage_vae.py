@@ -73,12 +73,12 @@ class MultiStageVAE(BaseVAE):
         # -------------------------------------
         # -----------  the rest  --------------
         # -------------------------------------
-        self.encoder_fc = [Network(self.cfg.network["encoder_fc"]) for i in range(self.cfg.n_classes)]
-        self.fc_mu = [Network(self.cfg.network["fc_mu"]) for i in range(self.cfg.n_classes)]
-        self.fc_var = [Network(self.cfg.network["fc_var"]) for i in range(self.cfg.n_classes)]
+        self.encoder_fc = nn.ModuleList([Network(self.cfg.network["encoder_fc"]) for i in range(self.cfg.n_classes)])
+        self.fc_mu = nn.ModuleList([Network(self.cfg.network["fc_mu"]) for i in range(self.cfg.n_classes)])
+        self.fc_var = nn.ModuleList([Network(self.cfg.network["fc_var"]) for i in range(self.cfg.n_classes)])
 
     def _build_decoder(self):
-        self.decoder_fc = [Network(self.cfg.network["decoder_fc"]) for i in range(self.cfg.n_classes)]
+        self.decoder_fc = nn.ModuleList([Network(self.cfg.network["decoder_fc"]) for i in range(self.cfg.n_classes)])
 
         # -------------------------------------
         # -----------  Conv encoders  ---------
