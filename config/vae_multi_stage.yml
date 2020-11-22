@@ -73,38 +73,38 @@ model:
     encoder_fc:
       - Linear:
           in_features: 256   # for 4 encoders use   =  512
-          out_features: 256
+          out_features: 128
         activation: LeakyReLU
         dropout: 0.5
       - Linear:
-          in_features: 256
-          out_features: 128
+          in_features: 128
+          out_features: 64
         activation: LeakyReLU
         dropout: 0.5
 
     fc_mu:
       - Linear:
-          in_features: 128
+          in_features: 64
           out_features: 32
         activation: LeakyReLU
 
     fc_var:
       - Linear:
-          in_features: 128
+          in_features: 64
           out_features: 32
         activation: LeakyReLU
 
     decoder_fc:
       - Linear:
           in_features: 32
+          out_features: 64
+        activation: LeakyReLU
+      - Linear:
+          in_features: 64
           out_features: 128
         activation: LeakyReLU
       - Linear:
           in_features: 128
-          out_features: 256
-        activation: LeakyReLU
-      - Linear:
-          in_features: 256
           out_features: 256   # for 4 encoders use   =  512
         activation: LeakyReLU
 
