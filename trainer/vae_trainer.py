@@ -87,8 +87,8 @@ class VAETrainer(object):
             self.model.train()
         else:
             self.model.eval()
-        data_iter = iter(self.dataloaders[mode]["kitti360_semantic_1hot"])      # TODO fix the way Kitti360Semantic1Hot is used
-        iterator = tqdm(range(len(self.dataloaders[mode]["kitti360_semantic_1hot"])), dynamic_ncols=True)
+        data_iter = iter(self.dataloaders[mode]["kitti360_semantic"])      # TODO fix the way Kitti360Semantic1Hot is used
+        iterator = tqdm(range(len(self.dataloaders[mode]["kitti360_semantic"])), dynamic_ncols=True)
 
         losses = defaultdict(list)
 
