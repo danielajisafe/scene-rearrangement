@@ -109,8 +109,6 @@ class MarkovVAE(BaseVAE):
         '''
         input: (n_classes, N, 1, H, W)
         '''
-        import pdb; pdb.set_trace()
-        input = input.unsqueeze(0).repeat(3, 1, 1, 1, 1)
         self.decoder_intermediates = list()
         vae_outputs = defaultdict(list)
         for stage in range(self.cfg.n_classes):
