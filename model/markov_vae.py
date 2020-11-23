@@ -120,6 +120,7 @@ class MarkovVAE(BaseVAE):
             vae_outputs['log_var'].append(log_var)
             vae_outputs['decoded'].append(decoded)
 
+        vae_outputs['decoded'] = torch.cat(vae_outputs['decoded'], dim=1)
         model_out_tuple = namedtuple(
             "model_out", vae_outputs
         )

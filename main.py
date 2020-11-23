@@ -36,7 +36,7 @@ if __name__=="__main__":
 
     cfg = cfg_parser(join("config", args.version))
     cfg["exp_cfg"].version = splitext(args.version)[0]
-    cfg["exp_cfg"].run_name = "experiment_" + cfg["exp_cfg"].version
+    cfg["exp_cfg"].run_name = cfg["exp_cfg"].version
     cfg["exp_cfg"].wandb = args.wandb
 
     if args.wandb:
