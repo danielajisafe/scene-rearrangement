@@ -101,10 +101,10 @@ class MarkovVAETrainer(object):
                 with torch.no_grad():
                     model_out = self.model(batch_data["mask_in"])
 
-            reconst_loss = eval(self.model_cfg.reconstruction_loss)(torch.cat(model_out.decoded, dim=1), batch_data['mask_out'])
+            reconst_loss = eval(self.model_cfg.reconstruction_loss)(torch.cat(model_out.decoded, dim=1), batch_data['mask_out'], self.model_cfg.loss_weights['reconstruction'])
             kld = [KL(model_out.mu[vae_stage], model_out.log_var[vae_stage]) for vae_stage in range(len(model_out.mu))] # separate Kld for each VAE
 
-            loss = self.model_cfg.loss_weights['reconstruction'] * reconst_loss \
+            loss = reconst_loss \
                 + sum([self.model_cfg.loss_weights['kld'][vae_stage] * kld[vae_stage] for vae_stage in range(len(kld))])
 
             if mode.__eq__('train'):

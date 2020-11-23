@@ -16,12 +16,12 @@ def mae(x, y):
 	'''
 	return F.l1_loss(x, y)
 
-def cross_entropy(x, y):
+def cross_entropy(x, y, weights):
 	'''
 	x: network output of shape (N, num_classes, H ,W)
 	y: ground truth mask with shape (N, H, W)
 	'''
-	return F.cross_entropy(x, y.long())
+	return F.cross_entropy(x, y.long(), weight=torch.FloatTensor(weights).to(x.device))
 
 def KL(mu, log_var):
 	'''
