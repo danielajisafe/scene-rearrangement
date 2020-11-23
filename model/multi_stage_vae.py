@@ -149,19 +149,19 @@ class MultiStageVAE(BaseVAE):
         # TODO fix this part to be nicer :)
         result = [result[vae_stage].view(-1, 128, 2, 2) for vae_stage in range(self.cfg.n_classes)]
 
-        result_dncoder0 = []
-        result_dncoder1 = []
-        result_dncoder2 = []
-        result_dncoder3 = []
-        result_dncoder4 = []
+        result_decoder0 = []
+        result_decoder1 = []
+        result_decoder2 = []
+        result_decoder3 = []
+        result_decoder4 = []
         for vae_stage in range(self.cfg.n_classes): # looping to get the outputs of all decoder
-            result_dncoder0.append(self.decoder0[vae_stage](torch.cat(result[:vae_stage+1], dim=1)))
-            result_dncoder1.append(self.decoder1[vae_stage](torch.cat(result_dncoder0, dim=1)))
-            result_dncoder2.append(self.decoder2[vae_stage](torch.cat(result_dncoder1, dim=1)))
-            result_dncoder3.append(self.decoder3[vae_stage](torch.cat(result_dncoder2, dim=1)))
-            result_dncoder4.append(self.decoder4[vae_stage](torch.cat(result_dncoder3, dim=1)))
+            result_decoder0.append(self.decoder0[vae_stage](torch.cat(result[:vae_stage+1], dim=1)))
+            result_decodoer1.append(self.decoder1[vae_stage](torch.cat(result_decoder0, dim=1)))
+            result_decoder2.append(self.decoder2[vae_stage](torch.cat(result_decoder1, dim=1)))
+            result_decoder3.append(self.decoder3[vae_stage](torch.cat(result_decoder2, dim=1)))
+            result_decoder4.append(self.decoder4[vae_stage](torch.cat(result_decoder3, dim=1)))
 
-        result = torch.cat(result_dncoder4, dim=1)
+        result = torch.cat(result_decoder4, dim=1)
 
         return result
 
