@@ -107,12 +107,12 @@ class MarkovVAE(BaseVAE):
 
     def forward(self, input):
         '''
-        input: (n_classes, N, 1, H, W)
+        input: (N, n_classes, H, W)
         '''
         self.decoder_intermediates = list()
         vae_outputs = defaultdict(list)
         for stage in range(self.cfg.n_classes):
-            mu, log_var = self.encode(stage, input[stage])
+            mu, log_var = self.encode(stage, input[:, stage:stage+1])
             z = self.reparameterize(mu, log_var)
             decoded = self.decode(stage, z)
 
