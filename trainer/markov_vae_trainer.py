@@ -62,7 +62,7 @@ class MarkovVAETrainer(object):
 
     def _setup_optimizers(self):
         vae_params = list(self.model.parameters())
-        vae_optim_cfg = self.model_cfg.optimizers["multi_stage_vae"]
+        vae_optim_cfg = self.model_cfg.optimizers["vae"]
 
         self.vae_opt =  eval(
             "optim.{}(vae_params, **{})".format([*vae_optim_cfg.keys()][0], [*vae_optim_cfg.values()][0])
@@ -101,7 +101,7 @@ class MarkovVAETrainer(object):
                 with torch.no_grad():
                     model_out = self.model(batch_data["mask_in"])
 
-            reconst_loss = eval(self.model_cfg.reconstruction_loss)(model_out.reconst, batch_data['mask_out'])
+            reconst_loss = eval(self.model_cfg.reconstruction_loss)(torch.cat(model_out.decoded, dim=1), batch_data['mask_out'])
             kld = [KL(model_out.mu[vae_stage], model_out.log_var[vae_stage]) for vae_stage in range(len(model_out.mu))] # separate Kld for each VAE
 
             loss = self.model_cfg.loss_weights['reconstruction'] * reconst_loss \
@@ -118,10 +118,10 @@ class MarkovVAETrainer(object):
             for vae_stage in range(len(kld)):
                 losses['KL-divergence-{}'.format(vae_stage)].append(kld[vae_stage].item())
 
-            # visualize images from the first batch
-            if self.exp_cfg.wandb and i == 0:
+            # visualize images from the last batch
+            if self.exp_cfg.wandb and i == len(iterator) - 1:
                 viz_gt = detach_2_np(batch_data['mask_in'])
-                viz_pred = detach_2_np(model_out.reconst)
+                viz_pred = detach_2_np(torch.cat(model_out.decoded, dim=1))
                 
         losses = self._aggregate_losses(losses)
         self._log_epoch_summary(epochID, mode, losses)

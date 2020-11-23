@@ -19,9 +19,9 @@ def mae(x, y):
 def cross_entropy(x, y):
 	'''
 	x: network output of shape (N, num_classes, H ,W)
-	y: ground truth mask with shape (N, 1, H, W)
+	y: ground truth mask with shape (N, H, W)
 	'''
-	return F.cross_entropy(x, y.squeeze(1).long())
+	return F.cross_entropy(x, y.long())
 
 def KL(mu, log_var):
 	'''
