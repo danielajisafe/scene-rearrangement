@@ -1,7 +1,7 @@
 experiment:
   description: initial reconstruction test with semantic_rgb images
   output_location: path to where trained models should be saved (#TODO)
-
+  run_name: multistage_B32_L1.2.7
 data:
   sources:
     - kitti360_semantic_1hot:
@@ -9,7 +9,7 @@ data:
         val: path to folder containing validation data
         test: path to folder containing test data
         batch_size: 32
-        sample_size: 1000
+        sample_size: null
         crop_size: 224
   num_workers: 10
 
