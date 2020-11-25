@@ -23,8 +23,9 @@ model:
   # what loss to use for reconstruction? If "mse" or "mae" then change output channel to match input channel below
   reconstruction_loss: cross_entropy
   loss_weights:
-    reconstruction: 1
+    reconstruction: [0.1, 0.2, 0.7]
     kld: [0.0001, 0.0001, 0.0001]  #for each object category. Currently shape = 3 = ['Vehicle', 'Road', 'Background']
+    bin: 0.15
   network:
 
     encoder0:

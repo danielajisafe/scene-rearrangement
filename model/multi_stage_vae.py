@@ -171,7 +171,7 @@ class MultiStageVAE(BaseVAE):
 
         model_out_tuple = namedtuple(
             "model_out",
-            ["reconst", "mu", "log_var"],
+            ["decoded", "mu", "log_var"],
         )
         model_out = model_out_tuple(
             self.decode(z), mu, log_var
