@@ -80,8 +80,8 @@ class Kitti360Semantic1Hot(Dataset):
 		background = image_semantic_1hot[background_ids].sum(dim=0, keepdim=True)
 
 
-		# front to back
-		mask_in = torch.cat([vehicle, road, background], dim=0)
+		# back to front
+		mask_in = torch.cat([background, road, vehicle], dim=0)
 
 		# creating the index mask needed for loss calculation
 		for i in range(mask_in.shape[0]):
