@@ -34,4 +34,20 @@ def visualize_images(epochID, mode, gt_image, pred_image):
 
     grid = vutils.make_grid(torch.from_numpy(grid), nrow=4, normalize=True, scale_each=True)
 
-    wandb.log({"{}_reconstruction".format(mode): wandb.Image(grid)}, step=epochID)
+    ## Draw stage-wise predictions. Currently hardcoded to 3 classes.
+    bg = np.zeros((4, 3, pred_image.shape[2], pred_image.shape[3]))
+    road = np.zeros((4, 3, pred_image.shape[2], pred_image.shape[3]))
+    cars = np.zeros((4, 3, pred_image.shape[2], pred_image.shape[3]))
+
+    bg[:, 0:1] = pred_image[:4, 0:1]
+    road[:, 1:2] = pred_image[:4, 1:2]
+    cars[:, 2:3] = pred_image[:4, 2:3]
+
+    grid_layers = np.zeros((12, 3, pred_image.shape[2], pred_image.shape[3]))
+    for i in range(4):
+        grid_layers[i] = bg[i]
+        grid_layers[i+4] = road[i]
+        grid_layers[i+8] = cars[i]
+
+    grid_layers = vutils.make_grid(torch.from_numpy(grid_layers), nrow=4, normalize=True, scale_each=True)
+    wandb.log({"{}_reconstruction".format(mode): wandb.Image(torch.cat([grid, grid_layers], dim=1))}, step=epochID)
