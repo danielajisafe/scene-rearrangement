@@ -3,7 +3,9 @@ from collections import defaultdict, OrderedDict
 
 import wandb
 import torch
+import logging
 import numpy as np
+from os.path import join
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
@@ -27,6 +29,7 @@ class MarkovVAETrainer(object):
         if self.exp_cfg.wandb:
             wandb.watch(self.model)
         self._setup_optimizers()
+        self.current_total_loss = np.inf
 
     def _setup_dataloaders(self):
         self.datasets = defaultdict(list)
@@ -67,6 +70,20 @@ class MarkovVAETrainer(object):
         self.vae_opt =  eval(
             "optim.{}(vae_params, **{})".format([*vae_optim_cfg.keys()][0], [*vae_optim_cfg.values()][0])
         )
+
+    def save_checkpoint(self, epochID):
+        save_dict = {
+            "state_dict": self.model.state_dict(),
+            "optimizer": self.vae_opt.state_dict(),
+            "epoch": epochID
+        }
+        fname = "{}_{}.pth".format(self.model_cfg.model_key, epochID)
+        torch.save(save_dict, join(self.exp_cfg.CKPT_DIR, fname))
+        logging.info("Saved checkpoint {}.".format(epochID))
+
+    def compare_and_save(self, loss, epochID):
+        if loss < self.current_total_loss:
+            self.save_checkpoint(epochID)
 
     def _backprop(self, loss):
         self.vae_opt.zero_grad()
@@ -130,11 +147,14 @@ class MarkovVAETrainer(object):
         self._log_epoch_summary(epochID, mode, losses)
         if self.exp_cfg.wandb:
             wandb_utils.visualize_images(epochID, mode, viz_gt, viz_pred)
+        return losses
 
     def train(self):
         for epochID in range(self.model_cfg.epochs):
             for mode in self.model_cfg.modes:
-                self._epoch(mode, epochID)
+                losses = self._epoch(mode, epochID)
+                # if mode == 'val':
+                self.compare_and_save(losses['total_loss'], epochID)
 
 
 class MarkovVAETrainerBuilder(object):
