@@ -176,8 +176,8 @@ class MarkovVAETrainer(object):
         for epochID in range(self.model_cfg.epochs):
             for mode in self.model_cfg.modes:
                 losses = self._epoch(mode, epochID)
-                # if mode == 'val':
-                self.compare_and_save(losses['total_loss'], epochID)
+                if mode == 'val':
+                    self.compare_and_save(losses['total_loss'], epochID)
 
 
 class MarkovVAETrainerBuilder(object):
