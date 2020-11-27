@@ -5,15 +5,15 @@ import wandb
 import torch
 import logging
 import numpy as np
-from os.path import join
 import torch.optim as optim
+from os.path import join, exists
 from torch.utils.data import DataLoader
 
 from data import data
 from model import model
-from utils.utils import dict_to_device, detach_2_np
 from losses.losses import *
 from visualization import wandb_utils
+from utils.utils import dict_to_device, detach_2_np, copy_state_dict
 
 
 class MarkovVAETrainer(object):
@@ -29,6 +29,10 @@ class MarkovVAETrainer(object):
         if self.exp_cfg.wandb:
             wandb.watch(self.model)
         self._setup_optimizers()
+
+        if self.exp_cfg.load:
+            self.load_checkpoint(self.exp_cfg.load)
+
         self.current_total_loss = np.inf
 
     def _setup_dataloaders(self):
@@ -71,7 +75,12 @@ class MarkovVAETrainer(object):
             "optim.{}(vae_params, **{})".format([*vae_optim_cfg.keys()][0], [*vae_optim_cfg.values()][0])
         )
 
-    def save_checkpoint(self, epochID):
+    def save_checkpoint(self, epochID:int):
+        """Saves trained checkpoint (model and optimizer)
+        Args:
+            epochID (int): Epoch number of saved checkpoint
+            save_path (str): Absolute path of where to save the checkpoint
+        """
         save_dict = {
             "state_dict": self.model.state_dict(),
             "optimizer": self.vae_opt.state_dict(),
@@ -81,7 +90,21 @@ class MarkovVAETrainer(object):
         torch.save(save_dict, join(self.exp_cfg.CKPT_DIR, fname))
         logging.info("Saved checkpoint {}.".format(epochID))
 
-    def compare_and_save(self, loss, epochID):
+    def load_checkpoint(self, load_path: str):
+        """Load pre-trained checkpoint (model and optimizer)
+        Args:
+            load_path (str): Absolute path of where to load checkpoints from
+        """
+        if exists(load_path):
+            checkpoint = torch.load(load_path)
+            logging.info("Loading model weights from {}.".format(load_path))
+            copy_state_dict(self.model.state_dict(), checkpoint["state_dict"])
+            if self.exp_cfg.init_opt:
+                self.vae_opt.load_state_dict(checkpoint["optimizer"])
+        else:
+            logging.error("Checkpoint {} not found.".format(load_path))
+
+    def compare_and_save(self, loss:float, epochID:int):
         if loss < self.current_total_loss:
             self.save_checkpoint(epochID)
 
