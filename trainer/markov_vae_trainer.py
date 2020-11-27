@@ -107,6 +107,7 @@ class MarkovVAETrainer(object):
     def compare_and_save(self, loss:float, epochID:int):
         if loss < self.current_total_loss:
             self.save_checkpoint(epochID)
+            self.current_total_loss = loss
 
     def _backprop(self, loss):
         self.vae_opt.zero_grad()

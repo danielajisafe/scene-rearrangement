@@ -8,7 +8,7 @@ data:
   sources:
     - kitti360_semantic_1hot:
         train: /data/namrata/kitti-360/data_2d_semantics/train
-        val: path to folder containing validation data
+        val: /data/namrata/kitti-360/data_2d_semantics/val
         test: path to folder containing test data
         batch_size: 32
         sample_size: 1000
@@ -20,6 +20,7 @@ model:
   trainer_key: markov_vae_trainer
   modes:
     - train
+    - val
   epochs: 100
   n_classes: 3
   reconstruction_loss: cross_entropy
