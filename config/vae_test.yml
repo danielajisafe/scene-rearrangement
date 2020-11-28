@@ -83,18 +83,18 @@ model:
     fc_mu:
       - Linear:
           in_features: 512
-          out_features: 32
-        activation: LeakyReLU
+          out_features: 256
+#        activation: LeakyReLU
 
     fc_var:
       - Linear:
           in_features: 512
-          out_features: 32
-        activation: LeakyReLU
+          out_features: 256
+#        activation: LeakyReLU
 
     decoder_fc:
       - Linear:
-          in_features: 32
+          in_features: 256
           out_features: 512
         activation: LeakyReLU
       - Linear:
