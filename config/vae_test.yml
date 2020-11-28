@@ -4,20 +4,20 @@ experiment:
 
 data:
   sources:
-#    - kitti360_semantic:
-#        train: /home/willow/Documents/kitti/data_2d_semantics/train
+    - kitti360_semantic:
+        train: ../Datasets/Kitti360/data_2d_semantics/train
+        val: path to folder containing validation data
+        test: path to folder containing test data
+        batch_size: 32
+        sample_size: null
+        crop_size: 224
+#    - kitti360_semantic_1hot:
+#        train: ../Datasets/Kitti360/data_2d_semantics/train
 #        val: path to folder containing validation data
 #        test: path to folder containing test data
 #        batch_size: 32
 #        sample_size: 1000
 #        crop_size: 224
-    - kitti360_semantic_1hot:
-        train: ../Datasets/Kitti360/data_2d_semantics/train
-        val: path to folder containing validation data
-        test: path to folder containing test data
-        batch_size: 32
-        sample_size: 1000
-        crop_size: 224
   num_workers: 10
 
 model:
@@ -135,7 +135,7 @@ model:
         activation: LeakyReLU
       - ConvTranspose2d:
           in_channels: 32
-          out_channels: 58
+          out_channels: 3
           kernel_size: 3
           stride: 2
       - Upsample:
