@@ -101,11 +101,11 @@ class VAETrainer(object):
                 with torch.no_grad():
                     model_out = self.model(batch_data["mask"])
 
-            reconst_loss = eval(self.model_cfg.reconstruction_loss)(model_out.reconst, batch_data['mask'])
+            reconst_loss = eval(self.model_cfg.reconstruction_loss)(model_out.reconst, batch_data['mask'].squeeze(), self.model_cfg.loss_weights['reconstruction'])
             kld = KL(model_out.mu, model_out.log_var)
 
-            loss = self.model_cfg.loss_weights['reconstruction'] * reconst_loss \
-                + self.model_cfg.loss_weights['kld'] * kld
+            loss = reconst_loss \
+                + self.model_cfg.loss_weights['kld'] * kld \
 
             if mode.__eq__('train'):
                 self._backprop(loss)
