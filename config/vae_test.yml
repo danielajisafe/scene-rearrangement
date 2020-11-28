@@ -140,7 +140,7 @@ model:
           stride: 2
       - Upsample:
           size: 224
-        activation: Sigmoid
+#        activation: Sigmoid
 
   optimizers:
     vae:

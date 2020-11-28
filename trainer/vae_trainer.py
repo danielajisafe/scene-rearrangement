@@ -120,7 +120,7 @@ class VAETrainer(object):
             # visualize images from the first batch
             if self.exp_cfg.wandb and i == 0:
                 viz_gt = detach_2_np(batch_data['mask'])
-                viz_pred = detach_2_np(model_out.reconst)
+                viz_pred = detach_2_np(model_out.reconst_soft)
                 
         losses = self._aggregate_losses(losses)
         self._log_epoch_summary(epochID, mode, losses)
