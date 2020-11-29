@@ -167,8 +167,8 @@ class MarkovVAETrainer(object):
 
             # visualize images from the last batch
             if self.exp_cfg.wandb and i == len(iterator) - 1:
-                viz_gt = detach_2_np(batch_data['mask_out'].unsqueeze(1))
-                viz_pred = detach_2_np(torch.nn.Softmax(dim=1)(model_out.decoded))
+                viz_gt = detach_2_np(batch_data['mask_in'])
+                viz_pred = detach_2_np(model_out.decoded)
                 
         losses = self._aggregate_losses(losses)
         self._log_epoch_summary(epochID, mode, losses)
