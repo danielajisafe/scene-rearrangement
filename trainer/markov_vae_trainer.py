@@ -144,7 +144,11 @@ class MarkovVAETrainer(object):
 
             reconst_loss = eval(self.model_cfg.reconstruction_loss)(model_out.decoded, batch_data['mask_out'], self.model_cfg.loss_weights['reconstruction'])
             kld = [KL(model_out.mu[vae_stage], model_out.log_var[vae_stage]) for vae_stage in range(len(model_out.mu))] # separate Kld for each VAE
-            bin_loss = binarization_loss(model_out.decoded)
+            if self.model_cfg.loss_weights['bin'] > 0:
+                bin_loss = binarization_loss(model_out.decoded)
+                losses['binarization_loss'].append(bin_loss.item())
+            else:
+                bin_loss = 0
 
             loss = reconst_loss \
                 + sum([self.model_cfg.loss_weights['kld'][vae_stage] * kld[vae_stage] for vae_stage in range(len(kld))]) \
@@ -158,14 +162,13 @@ class MarkovVAETrainer(object):
 
             losses['total_loss'].append(loss.item())
             losses['reconstruction_loss'].append(reconst_loss.item())
-            losses['binarization_loss'].append(bin_loss.item())
             for vae_stage in range(len(kld)):
                 losses['KL-divergence-{}'.format(vae_stage)].append(kld[vae_stage].item())
 
             # visualize images from the last batch
             if self.exp_cfg.wandb and i == len(iterator) - 1:
-                viz_gt = detach_2_np(batch_data['mask_in'])
-                viz_pred = detach_2_np(model_out.decoded)
+                viz_gt = detach_2_np(batch_data['mask_out'].unsqueeze(1))
+                viz_pred = detach_2_np(torch.nn.Softmax(dim=1)(model_out.decoded))
                 
         losses = self._aggregate_losses(losses)
         self._log_epoch_summary(epochID, mode, losses)

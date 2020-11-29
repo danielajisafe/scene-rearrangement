@@ -1,5 +1,5 @@
 experiment:
-  description: Markovian sequential VAEs
+  description: Simple VAE test
   output_location: /data/namrata/models/scene-reconstruction
   load: null
   init_opt: False
@@ -11,13 +11,13 @@ data:
         val: /data/namrata/kitti-360/data_2d_semantics/val
         test: path to folder containing test data
         batch_size: 32
-        sample_size: 1000
+        sample_size: 100
         crop_size: 224
   num_workers: 10
 
 model:
-  model_key: markov_vae
-  trainer_key: markov_vae_trainer
+  model_key: simple_vae
+  trainer_key: vae_trainer
   modes:
     - train
     - val
@@ -26,10 +26,10 @@ model:
   reconstruction_loss: cross_entropy
   loss_weights:
     reconstruction: [0.1, 0.2, 0.7]
-    kld: [0.0001, 0.0001, 0.0001]
-    bin: 0.0
+    kld: 0.0001
+    bin: 0
   network:
-    encoder_pre:
+    encoder:
       - Conv2d:
           in_channels: 1
           out_channels: 32
@@ -42,17 +42,15 @@ model:
           kernel_size: 3
           stride: 2
         activation: LeakyReLU
-      - Conv2d:
-          in_channels: 64
-          out_channels: 64
-          kernel_size: 3
-          stride: 2
-        activation: LeakyReLU
-
-    encoder_post:
       - MaxPool2d:
           kernel_size: 2
           stride: 2
+      - Conv2d:
+          in_channels: 64
+          out_channels: 128
+          kernel_size: 3
+          stride: 2
+        activation: LeakyReLU
       - Conv2d:
           in_channels: 128
           out_channels: 256
@@ -81,18 +79,17 @@ model:
     fc_mu:
       - Linear:
           in_features: 512
-          out_features: 32
+          out_features: 256
         activation: LeakyReLU
 
     fc_var:
       - Linear:
           in_features: 512
-          out_features: 32
-        activation: LeakyReLU
+          out_features: 256
 
     decoder_fc:
       - Linear:
-          in_features: 32
+          in_features: 256
           out_features: 512
         activation: LeakyReLU
       - Linear:
@@ -104,7 +101,7 @@ model:
           out_features: 2048
         activation: LeakyReLU
 
-    decoder_pre:
+    decoder:
       - ConvTranspose2d:
           in_channels: 512
           out_channels: 256
@@ -123,8 +120,6 @@ model:
           kernel_size: 3
           stride: 2
         activation: LeakyReLU
-
-    decoder_post:
       - Upsample:
           scale_factor: 2
       - ConvTranspose2d:
@@ -135,12 +130,11 @@ model:
         activation: LeakyReLU
       - ConvTranspose2d:
           in_channels: 32
-          out_channels: 1
+          out_channels: 3
           kernel_size: 3
           stride: 2
       - Upsample:
           size: 224
-        activation: Sigmoid
 
   optimizers:
     vae:
