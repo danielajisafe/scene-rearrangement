@@ -6,6 +6,35 @@ from os.path import join
 
 import torch
 from torch.utils.data import Dataset
+from tqdm import tqdm
+import os.path as path
+import pickle
+import numpy as np
+
+# region pickle data handling
+def save_pickle(data_dict, file_address):
+	"""
+	saves some data in pickle file. data_dict can be a dictionary format
+	Args:
+	data_dict: dictionary to save as pickle file
+	file_address: address of the file to be saved
+	"""
+	with open(file_address, 'wb') as handle:
+		pickle.dump(data_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def load_pickle(file_address):
+	"""
+	loads a pickle file. file outputs a dictionary
+	Args:
+	file_address: address of the .pickle file to be loaded
+	Returns:
+	data_dict: dictionary to loaded from pickle file
+	"""
+	with open(file_address, 'rb') as handle:
+		data_dict = pickle.load(handle)
+	return data_dict
+# endregion
 
 class Kitti360Semantic1Hot(Dataset):
 	def __init__(self, data_dir:str, sample_size:int, crop_size:int):
@@ -15,15 +44,44 @@ class Kitti360Semantic1Hot(Dataset):
 		self.crop_size = crop_size
 		self.num_classes = 45
 
+		self.load_data = True
+		if self.load_data == True:
+			self.LoadData(data_dir)
+
+
+	def LoadData(self, data_dir):
+		data_address = join(data_dir, 'data_sampleSize{}_cropSize{}.pickle'.format(len(self.data), self.crop_size))
+		if path.exists(data_address):
+			self.data_loaded = load_pickle(data_address)
+		else:
+			self.data_loaded = self.ReadData(data_dir)
+			# self.data_loaded = np.asarray(self.data_loaded)
+			save_pickle(self.data_loaded, data_address)
+
+	def ReadData(self, data_dir):
+		data_loaded = []
+		# data_loaded = np.zeros(shape=(len(self.data), self.crop_size, self.crop_size))
+		for index in tqdm(range(len(self.data)), desc="data loading to RAM"):
+			# for data_addr in self.data:
+			image = cv2.imread(self.data[index])
+			image = cv2.resize(image, (self.crop_size, self.crop_size), interpolation=cv2.INTER_NEAREST)
+			# data_loaded.append(torch.Tensor(image[:,:,0]))
+			data_loaded.append(image[:, :, 0])
+		return np.asarray(data_loaded)
+
 	def __len__(self):
 		return len(self.data)
 
 	def __getitem__(self, index):
-		image = cv2.imread(self.data[index])
-		image = cv2.resize(image, (self.crop_size, self.crop_size), interpolation=cv2.INTER_NEAREST)
+		if self.data_loaded is None:
+			image = cv2.imread(self.data[index])
+			image = cv2.resize(image, (self.crop_size, self.crop_size), interpolation=cv2.INTER_NEAREST)
+			image = torch.Tensor(image)
+			image_semantic_id = image[:, :, 0]
+		else:
+			image = self.data_loaded[index]
+			image_semantic_id = torch.Tensor(image)
 
-		image = torch.Tensor(image)
-		image_semantic_id = image[:, :, 0]
 
 		ones = torch.ones(image_semantic_id.shape)
 		zeros = torch.zeros(image_semantic_id.shape)
@@ -46,11 +104,11 @@ class Kitti360Semantic1Hot(Dataset):
 
 
 		# back to front
-		mask_in = torch.cat([background, road, vehicle], dim=0)
+		mask_in = torch.cat([background, road, vehicle], dim=0)   # 3xhxw
 
 		# creating the index mask needed for loss calculation
 		for i in range(mask_in.shape[0]):
-			mask_out += i * mask_in[i]
+			mask_out += i * mask_in[i]			# hxw
 
 		return {
 			"addr": self.data[index],
@@ -162,8 +220,8 @@ if __name__ == "__main__":
 	from matplotlib import rcParams
 	rcParams['figure.figsize'] = 20, 20
 
-	crop_size = 512
-	dataset = Kitti360Semantic1Hot(data_dir="../../Datasets/Kitti360/data_2d_semantics/train", sample_size=10,
+	crop_size = 224
+	dataset = Kitti360Semantic1Hot(data_dir="../../Datasets/Kitti360/data_2d_semantics/train", sample_size=10000,
 								   crop_size=crop_size)
 
 	print("len of dataset = {}".format(len(dataset)))
