@@ -1,6 +1,7 @@
 from trainer.vae_trainer import VAETrainerBuilder
 from trainer.multi_stage_vae_trainer import MultiStageVAETrainerBuilder
 from trainer.markov_vae_trainer import MarkovVAETrainerBuilder
+from trainer.vae_gan_trainer import VAEGANTrainerBuilder
 
 
 class TrainerFactory(object):
@@ -39,3 +40,4 @@ factory = TrainerFactory()
 factory.register_builder("vae_trainer", VAETrainerBuilder())
 factory.register_builder("markov_vae_trainer", MarkovVAETrainerBuilder())
 factory.register_builder("multi_stage_vae_trainer", MultiStageVAETrainerBuilder())
+factory.register_builder("vae_gan_trainer", VAEGANTrainerBuilder())
