@@ -11,7 +11,7 @@ data:
         val: /data/namrata/kitti-360/data_2d_semantics/val
         test: path to folder containing test data
         batch_size: 32
-        sample_size: 100
+        sample_size: 160
         crop_size: 224
   num_workers: 10
 
@@ -21,12 +21,12 @@ model:
   modes:
     - train
     - val
-  epochs: 100
+  epochs: 10000
   n_classes: 3
   reconstruction_loss: cross_entropy
   loss_weights:
-    reconstruction: [0.1, 0.2, 0.7]
-    kld: 0.0001
+    reconstruction: [0.2, 0.2, 0.6]
+    kld: 0
     bin: 0
   network:
     encoder:
@@ -80,7 +80,6 @@ model:
       - Linear:
           in_features: 512
           out_features: 256
-        activation: LeakyReLU
 
     fc_var:
       - Linear:
