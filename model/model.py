@@ -1,6 +1,7 @@
 from model.simple_vae import VAEBuilder
 from model.multi_stage_vae import MultiStageVAEBuilder
 from model.markov_vae import MarkovVAEBuilder
+from model.vae_gan import VAEGANBuilder
 
 class ModelFactory(object):
     """Factory class to build new model objects
@@ -37,3 +38,4 @@ factory = ModelFactory()
 factory.register_builder("simple_vae", VAEBuilder())
 factory.register_builder("multi_stage_vae", MultiStageVAEBuilder())
 factory.register_builder("markov_vae", MarkovVAEBuilder())
+factory.register_builder("vae_gan", VAEGANBuilder())

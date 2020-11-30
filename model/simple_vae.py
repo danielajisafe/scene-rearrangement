@@ -24,7 +24,7 @@ class VAE(BaseVAE):
     def _build_decoder(self):
         self.decoder_fc = Network(self.cfg.network["decoder_fc"])
         self.decoder = Network(self.cfg.network["decoder"])
-        self.softmax_layer = nn.Softmax(dim=1)
+
 
     def encode(self, input):
         result = self.encoder(input)
@@ -49,7 +49,7 @@ class VAE(BaseVAE):
 
     def decode(self, z):
         result = self.decoder_fc(z)
-        result = result.view(-1, 512, 2, 2)
+        result = result.view(-1, 512, 2, 2)       # TODO fix this part to be nicer :)
         result = self.decoder(result)
 
         return result
@@ -60,13 +60,11 @@ class VAE(BaseVAE):
 
         model_out_tuple = namedtuple(
             "model_out",
-            ["reconst", "reconst_soft", "mu", "log_var"],
+            ["reconst", "mu", "log_var"],
         )
 
-        mask = self.decode(z)
-        mask_soft = self.softmax_layer(mask)
         model_out = model_out_tuple(
-            mask , mask_soft, mu, log_var
+            self.decode(z), mu, log_var
         )
 
         return model_out

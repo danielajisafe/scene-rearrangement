@@ -1,4 +1,8 @@
+import sys
 import yaml
+import shutil
+from os import makedirs
+from os.path import join, basename, splitext, exists
 
 
 class Config(object):
@@ -24,7 +28,29 @@ def cfg_parser(cfg_file: str) -> dict:
     cfg = yaml.load(open(cfg_file, "r"), Loader=yaml.FullLoader)
 
     exp_cfg = Config(cfg_file, cfg["experiment"])
+    exp_cfg.__dict__.update(get_outdirs(exp_cfg))
     data_cfg = Config(cfg_file, cfg["data"])
     model_cfg = Config(cfg_file, cfg["model"])
 
     return {"data_cfg": data_cfg, "model_cfg": model_cfg, "exp_cfg": exp_cfg}
+
+def get_outdirs(exp_cfg):
+    outdir = join(exp_cfg.output_location, splitext(basename(exp_cfg.cfg_file))[0])
+    CKPT_DIR = join(outdir, "checkpoints")
+    if exists(outdir):
+        res = input(
+                "Version already exists and will be overwritten. Are you sure you want to continue?(y/n) "
+            )
+        if res == 'n':
+            print("Exiting program.")
+            sys.exit(0)
+        else:
+            shutil.rmtree(outdir)
+
+    makedirs(CKPT_DIR, exist_ok=True)
+    print("models will be saved to:", CKPT_DIR)
+    return {
+        "output_location": outdir,
+        "CKPT_DIR": CKPT_DIR
+        }
+        

@@ -35,3 +35,18 @@ def elbo(mu, log_var, z, reconst, input):
 
 def binarization_loss(mask):
     return torch.min(1-mask, mask).mean()
+
+def adversarial_loss(disc_value, mode='fake'):
+    if mode.__eq__('fake'):
+        target = torch.zeros_like(disc_value)
+    else:
+        target = torch.ones_like(disc_value)
+
+    return F.binary_cross_entropy(disc_value, target)
+
+def wasserstein_loss(disc_value, mode='fake'):
+    target = torch.ones_like(disc_value)
+    if mode.__eq__('fake'):
+        target = -target
+
+    return (target * disc_value).mean()
