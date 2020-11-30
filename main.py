@@ -18,7 +18,7 @@ if __name__=="__main__":
         "-v",
         "--version",
         type=str,
-        default="vae_multi_stage.yml",
+        default="vae_test.yml",
         help="name of the config file to use"
         )
     parser.add_argument(
@@ -28,7 +28,7 @@ if __name__=="__main__":
         help="GPU ID"
         )
     parser.add_argument(
-        "-w", "--wandb", action="store_true", help="Log to wandb"
+        "-w", "--wandb", default=False, action="store_true", help="Log to wandb"
     )
     (args, unknown_args) = parser.parse_known_args()
 
@@ -36,7 +36,7 @@ if __name__=="__main__":
 
     cfg = cfg_parser(join("config", args.version))
     cfg["exp_cfg"].version = splitext(args.version)[0]
-    cfg["exp_cfg"].run_name = cfg["exp_cfg"].version
+    # cfg["exp_cfg"].run_name = cfg["exp_cfg"].version
     cfg["exp_cfg"].wandb = args.wandb
 
     if args.wandb:

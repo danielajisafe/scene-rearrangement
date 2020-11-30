@@ -95,6 +95,7 @@ class VAETrainer(object):
         for i in iterator:
             batch_data = dict_to_device(next(data_iter), self.device)
 
+            # for j in tqdm(range(10), desc="inner iterator"):
             if mode.__eq__('train'):
                 model_out = self.model(batch_data["mask"])
             else:

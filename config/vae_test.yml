@@ -1,6 +1,7 @@
 experiment:
   description: initial reconstruction test with semantic_rgb images
   output_location: path to where trained models should be saved (#TODO)
+  run_name: vae_simple_decay_1e-5_LR_1e-3
 
 data:
   sources:
@@ -146,4 +147,4 @@ model:
     vae:
       Adam:
         lr: 0.001
-        weight_decay: 0.0001
+        weight_decay: 0.00001
