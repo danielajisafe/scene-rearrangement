@@ -149,6 +149,38 @@ class VAEGAN(BaseVAE):
         samples = self.decode(z)
         return samples
 
+    def rearrange(self, input, category_rearrange_list):
+        '''
+        input: (N, n_classes, H, W)
+        category_rearrange_list: per category variance multiplier for sampling in rearrangement process
+        '''
+        with torch.no_grad():
+            self.decoder_intermediates = list()
+            vae_outputs = defaultdict(list)
+            for stage in range(self.cfg.n_classes):
+                mu, log_var = self.encode(stage, input[:, stage:stage+1])   # TODO figure our which to modify
+                rearranged_log_var = log_var * category_rearrange_list[stage]
+                # rearrangged_mu = mu * category_rearrange_list[stage]
+                z = self.reparameterize(mu, log_var)
+                # if stage == 2:
+                #     z = torch.normal(0, 1, size=z.shape).to(self.device)
+                decoded = self.decode(stage, z)
+
+                vae_outputs['mu'].append(mu)
+                vae_outputs['log_var'].append(log_var)
+                vae_outputs['rearranged_log_var'].append(rearranged_log_var)
+                vae_outputs['decoded'].append(decoded)
+
+            vae_outputs['decoded'] = torch.cat(vae_outputs['decoded'], dim=1)
+            model_out_tuple = namedtuple(
+                "model_out", vae_outputs
+            )
+            model_out = model_out_tuple(
+                **vae_outputs
+            )
+
+            return model_out
+
 
 class VAEGANBuilder(object):
     """VAEGAN Model Builder Class

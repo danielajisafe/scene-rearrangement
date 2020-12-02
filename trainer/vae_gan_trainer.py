@@ -203,7 +203,7 @@ class VAEGANTrainer(object):
             if self.exp_cfg.wandb and i == len(iterator) - 1:
                 viz_gt = detach_2_np(batch_data['mask_out'].unsqueeze(1))
                 viz_pred = detach_2_np(torch.nn.Softmax(dim=1)(model_out.decoded))
-                
+
         losses = self._aggregate_losses(losses)
         self._log_epoch_summary(epochID, mode, losses)
         if self.exp_cfg.wandb:
@@ -216,6 +216,14 @@ class VAEGANTrainer(object):
                 losses = self._epoch(mode, epochID)
                 if mode == 'val':
                     self.compare_and_save(losses['total_loss'], epochID)
+
+    def rearrange(self, mode, index, rearrange_coefficients):
+        batch_data = self.datasets[mode][0][0][index]
+        self.model.eval()
+        with torch.no_grad():
+            model_out = self.model.rearrange(batch_data["mask_in"].unsqueeze(0).to(self.device), rearrange_coefficients)
+            viz_pred = np.asarray(detach_2_np(torch.nn.Softmax(dim=1)(model_out.decoded)))
+        return batch_data, model_out, viz_pred
 
 
 class VAEGANTrainerBuilder(object):
