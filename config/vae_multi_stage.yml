@@ -5,13 +5,13 @@ experiment:
 data:
   sources:
     - kitti360_semantic_1hot:
-        train: ../Datasets/Kitti360/data_2d_semantics/train
+        train: ../Datasets/Kitti360/data_2d_semantics/train  #TODO ERIC
         val: path to folder containing validation data
         test: path to folder containing test data
-        batch_size: 32
-        sample_size: null
+        batch_size: 32  #TODO ERIC
+        sample_size: null  #TODO ERIC
         crop_size: 224
-  num_workers: 10
+  num_workers: 5
 
 model:
   model_key: multi_stage_vae
@@ -23,12 +23,12 @@ model:
   # what loss to use for reconstruction? If "mse" or "mae" then change output channel to match input channel below
   reconstruction_loss: cross_entropy
   loss_weights:
-    reconstruction: [0.1, 0.2, 0.7]
+    reconstruction: [0.2, 0.2, 0.6]
     kld: [0.0001, 0.0001, 0.0001]  #for each object category. Currently shape = 3 = ['Vehicle', 'Road', 'Background']
-    bin: 0.15
+    bin: 0
   network:
 
-    encoder0:
+    encoder0:    #TODO ERIC
       - Conv2d:
           in_channels: 1
           out_channels: 16      # out shape = 16x111x111
@@ -36,7 +36,7 @@ model:
           stride: 2
         activation: LeakyReLU
 
-    encoder1:
+    encoder1:   #TODO ERIC  in multi_stage_vae.py
       - Conv2d:
           in_channels: 16
           out_channels: 32      # out shape = 32x55x55
@@ -47,7 +47,7 @@ model:
           kernel_size: 2
           stride: 2
 
-    encoder2:
+    encoder2:    #TODO ERIC  in multi_stage_vae.py
       - Conv2d:
           in_channels: 32
           out_channels: 64      # out shape = 64x13x13
@@ -55,7 +55,7 @@ model:
           stride: 2
         activation: LeakyReLU
 
-    encoder3:
+    encoder3:   #TODO ERIC  in multi_stage_vae.py
       - Conv2d:
           in_channels: 64
           out_channels: 128     # out shape = 128x6x6
@@ -63,7 +63,7 @@ model:
           stride: 2
         activation: LeakyReLU
 
-    encoder4:
+    encoder4:    #TODO ERIC  in multi_stage_vae.py
       - Conv2d:
           in_channels: 128
           out_channels: 128     # out shape = 128x2x2
@@ -71,7 +71,7 @@ model:
           stride: 2
         activation: LeakyReLU
 
-    encoder_fc:
+    encoder_fc:    #TODO ERIC
       - Linear:
           in_features: 512
           out_features: 256
@@ -83,19 +83,19 @@ model:
         activation: LeakyReLU
         dropout: 0.5
 
-    fc_mu:
+    fc_mu: #TODO ERIC
       - Linear:
           in_features: 128
-          out_features: 32
+          out_features: 256
         activation: LeakyReLU
 
-    fc_var:
+    fc_var: #TODO ERIC
       - Linear:
           in_features: 128
-          out_features: 32
+          out_features: 256
         activation: LeakyReLU
 
-    decoder_fc:
+    decoder_fc: #TODO ERIC
       - Linear:
           in_features: 32
           out_features: 128
@@ -109,21 +109,21 @@ model:
           out_features: 512
         activation: LeakyReLU
 
-    decoder0:
+    decoder0:  #TODO ERIC  in multi_stage_vae.py
       - ConvTranspose2d:
           in_channels: 128      # in shape = 128x2x2
           out_channels: 64      # out shape = 64x6x6
           kernel_size: 3
           stride: 3
         activation: LeakyReLU
-    decoder1:
+    decoder1:  #TODO ERIC  in multi_stage_vae.py
       - ConvTranspose2d:
           in_channels: 64
           out_channels: 32      # out shape = 32x13x13
           kernel_size: 3
           stride: 2
         activation: LeakyReLU
-    decoder2:
+    decoder2:  #TODO ERIC  in multi_stage_vae.py
       - ConvTranspose2d:
           in_channels: 32
           out_channels: 16      # out shape = 16x27x27
@@ -132,14 +132,14 @@ model:
         activation: LeakyReLU
       - Upsample:
           scale_factor: 2       # out shape = 16x54x54
-    decoder3:
+    decoder3:  #TODO ERIC  in multi_stage_vae.py
       - ConvTranspose2d:
           in_channels: 16
           out_channels: 8       # out shape = 8x109x109
           kernel_size: 3
           stride: 2
         activation: LeakyReLU
-    decoder4:
+    decoder4:  #TODO ERIC  in multi_stage_vae.py
       - ConvTranspose2d:
           in_channels: 8
           out_channels: 4       # out shape = 4x219x219
@@ -152,5 +152,5 @@ model:
   optimizers:
     multi_stage_vae:
       Adam:
-        lr: 0.001
-        weight_decay: 0.0001
+        lr: 0.0001
+        weight_decay: 0.00001

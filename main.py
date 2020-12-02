@@ -19,7 +19,7 @@ if __name__=="__main__":
         "-v",
         "--version",
         type=str,
-        default="vae_test.yml",
+        default="vae_multi_stage.yml",
         help="name of the config file to use"
         )
     parser.add_argument(
@@ -29,7 +29,7 @@ if __name__=="__main__":
         help="GPU ID"
         )
     parser.add_argument(
-        "-w", "--wandb", default=False, action="store_true", help="Log to wandb"
+        "-w", "--wandb", default=True, action="store_true", help="Log to wandb"   #TODO ERIC
     )
     (args, unknown_args) = parser.parse_known_args()
 
