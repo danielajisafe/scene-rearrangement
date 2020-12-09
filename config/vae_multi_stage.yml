@@ -1,0 +1,155 @@
+experiment:
+  description: initial reconstruction test with semantic_rgb images
+  output_location: path to where trained models should be saved (#TODO)
+
+data:
+  sources:
+    - kitti360_semantic_1hot:
+        train: ../Datasets/Kitti360/data_2d_semantics/train
+        val: path to folder containing validation data
+        test: path to folder containing test data
+        batch_size: 32
+        sample_size: 1000
+        crop_size: 224
+  num_workers: 10
+
+model:
+  model_key: multi_stage_vae
+  trainer_key: multi_stage_vae_trainer
+  modes:
+    - train
+  epochs: 100
+  n_classes: 3
+  # what loss to use for reconstruction? If "mse" or "mae" then change output channel to match input channel below
+  reconstruction_loss: cross_entropy
+  loss_weights:
+    reconstruction: 1
+    kld: [0.0001, 0.0001, 0.0001]  #for each object category. Currently shape = 3 = ['Vehicle', 'Road', 'Background']
+  network:
+
+    encoder0:
+      - Conv2d:
+          in_channels: 1
+          out_channels: 16      # out shape = 16x111x111
+          kernel_size: 3
+          stride: 2
+        activation: LeakyReLU
+
+    encoder1:
+      - Conv2d:
+          in_channels: 16
+          out_channels: 32      # out shape = 32x55x55
+          kernel_size: 3
+          stride: 2
+        activation: LeakyReLU
+      - MaxPool2d:              # out shape = 32x27x27
+          kernel_size: 2
+          stride: 2
+
+    encoder2:
+      - Conv2d:
+          in_channels: 32
+          out_channels: 64      # out shape = 64x13x13
+          kernel_size: 3
+          stride: 2
+        activation: LeakyReLU
+
+    encoder3:
+      - Conv2d:
+          in_channels: 64
+          out_channels: 128     # out shape = 128x6x6
+          kernel_size: 3
+          stride: 2
+        activation: LeakyReLU
+
+    encoder4:
+      - Conv2d:
+          in_channels: 128
+          out_channels: 128     # out shape = 128x2x2
+          kernel_size: 3
+          stride: 2
+        activation: LeakyReLU
+
+    encoder_fc:
+      - Linear:
+          in_features: 512
+          out_features: 256
+        activation: LeakyReLU
+        dropout: 0.5
+      - Linear:
+          in_features: 256
+          out_features: 128
+        activation: LeakyReLU
+        dropout: 0.5
+
+    fc_mu:
+      - Linear:
+          in_features: 128
+          out_features: 32
+        activation: LeakyReLU
+
+    fc_var:
+      - Linear:
+          in_features: 128
+          out_features: 32
+        activation: LeakyReLU
+
+    decoder_fc:
+      - Linear:
+          in_features: 32
+          out_features: 128
+        activation: LeakyReLU
+      - Linear:
+          in_features: 128
+          out_features: 256
+        activation: LeakyReLU
+      - Linear:
+          in_features: 256
+          out_features: 512
+        activation: LeakyReLU
+
+    decoder0:
+      - ConvTranspose2d:
+          in_channels: 128      # in shape = 128x2x2
+          out_channels: 64      # out shape = 64x6x6
+          kernel_size: 3
+          stride: 3
+        activation: LeakyReLU
+    decoder1:
+      - ConvTranspose2d:
+          in_channels: 64
+          out_channels: 32      # out shape = 32x13x13
+          kernel_size: 3
+          stride: 2
+        activation: LeakyReLU
+    decoder2:
+      - ConvTranspose2d:
+          in_channels: 32
+          out_channels: 16      # out shape = 16x27x27
+          kernel_size: 3
+          stride: 2
+        activation: LeakyReLU
+      - Upsample:
+          scale_factor: 2       # out shape = 16x54x54
+    decoder3:
+      - ConvTranspose2d:
+          in_channels: 16
+          out_channels: 8       # out shape = 8x109x109
+          kernel_size: 3
+          stride: 2
+        activation: LeakyReLU
+    decoder4:
+      - ConvTranspose2d:
+          in_channels: 8
+          out_channels: 4       # out shape = 4x219x219
+          kernel_size: 3
+          stride: 2
+      - Upsample:
+          size: 224
+#        activation: Sigmoid
+
+  optimizers:
+    multi_stage_vae:
+      Adam:
+        lr: 0.001
+        weight_decay: 0.0001

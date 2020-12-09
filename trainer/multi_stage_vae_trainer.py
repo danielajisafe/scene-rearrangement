@@ -3,20 +3,18 @@ from collections import defaultdict, OrderedDict
 
 import wandb
 import torch
-import logging
 import numpy as np
 import torch.optim as optim
-from os.path import join, exists
 from torch.utils.data import DataLoader
 
 from data import data
 from model import model
+from utils.utils import dict_to_device, detach_2_np
 from losses.losses import *
 from visualization import wandb_utils
-from utils.utils import dict_to_device, detach_2_np, copy_state_dict
 
 
-class VAETrainer(object):
+class MultiStageVAETrainer(object):
     def __init__(self, data_cfg, model_cfg, exp_cfg):
         self.data_cfg = data_cfg
         self.model_cfg = model_cfg
@@ -29,11 +27,6 @@ class VAETrainer(object):
         if self.exp_cfg.wandb:
             wandb.watch(self.model)
         self._setup_optimizers()
-
-        if self.exp_cfg.load:
-            self.load_checkpoint(self.exp_cfg.load)
-
-        self.current_total_loss = np.inf
 
     def _setup_dataloaders(self):
         self.datasets = defaultdict(list)
@@ -69,45 +62,11 @@ class VAETrainer(object):
 
     def _setup_optimizers(self):
         vae_params = list(self.model.parameters())
-        vae_optim_cfg = self.model_cfg.optimizers["vae"]
+        vae_optim_cfg = self.model_cfg.optimizers["multi_stage_vae"]
 
         self.vae_opt =  eval(
             "optim.{}(vae_params, **{})".format([*vae_optim_cfg.keys()][0], [*vae_optim_cfg.values()][0])
         )
-
-    def save_checkpoint(self, epochID:int):
-        """Saves trained checkpoint (model and optimizer)
-        Args:
-            epochID (int): Epoch number of saved checkpoint
-            save_path (str): Absolute path of where to save the checkpoint
-        """
-        save_dict = {
-            "state_dict": self.model.state_dict(),
-            "optimizer": self.vae_opt.state_dict(),
-            "epoch": epochID
-        }
-        fname = "{}_{}.pth".format(self.model_cfg.model_key, epochID)
-        torch.save(save_dict, join(self.exp_cfg.CKPT_DIR, fname))
-        logging.info("Saved checkpoint {}.".format(epochID))
-
-    def load_checkpoint(self, load_path: str):
-        """Load pre-trained checkpoint (model and optimizer)
-        Args:
-            load_path (str): Absolute path of where to load checkpoints from
-        """
-        if exists(load_path):
-            checkpoint = torch.load(load_path)
-            logging.info("Loading model weights from {}.".format(load_path))
-            copy_state_dict(self.model.state_dict(), checkpoint["state_dict"])
-            if self.exp_cfg.init_opt:
-                self.vae_opt.load_state_dict(checkpoint["optimizer"])
-        else:
-            logging.error("Checkpoint {} not found.".format(load_path))
-
-    def compare_and_save(self, loss:float, epochID:int):
-        if loss < self.current_total_loss:
-            self.save_checkpoint(epochID)
-            self.current_total_loss = loss
 
     def _backprop(self, loss):
         self.vae_opt.zero_grad()
@@ -137,15 +96,16 @@ class VAETrainer(object):
             batch_data = dict_to_device(next(data_iter), self.device)
 
             if mode.__eq__('train'):
-                model_out = self.model(batch_data["mask_out"].unsqueeze(1))
+                model_out = self.model(batch_data["mask_in"])
             else:
                 with torch.no_grad():
-                    model_out = self.model(batch_data["mask_out"].unsqueeze(1))
+                    model_out = self.model(batch_data["mask_in"])
 
-            reconst_loss = eval(self.model_cfg.reconstruction_loss)(model_out.reconst, batch_data['mask_out'], self.model_cfg.loss_weights['reconstruction'])
-            kld = KL(model_out.mu, model_out.log_var)
+            reconst_loss = eval(self.model_cfg.reconstruction_loss)(model_out.reconst, batch_data['mask_out'])
+            kld = [KL(model_out.mu[vae_stage], model_out.log_var[vae_stage]) for vae_stage in range(len(model_out.mu))] # separate Kld for each VAE
 
-            loss = reconst_loss + self.model_cfg.loss_weights['kld'] * kld
+            loss = self.model_cfg.loss_weights['reconstruction'] * reconst_loss \
+                + sum([self.model_cfg.loss_weights['kld'][vae_stage] * kld[vae_stage] for vae_stage in range(len(kld))])
 
             if mode.__eq__('train'):
                 self._backprop(loss)
@@ -155,12 +115,13 @@ class VAETrainer(object):
 
             losses['total_loss'].append(loss.item())
             losses['reconstruction_loss'].append(reconst_loss.item())
-            losses['KL-divergence'].append(kld.item())
+            for vae_stage in range(len(kld)):
+                losses['KL-divergence-{}'.format(vae_stage)].append(kld[vae_stage].item())
 
-            # visualize images from the last batch
-            if self.exp_cfg.wandb and i == len(iterator) - 1:
-                viz_gt = detach_2_np(batch_data['mask_out'].unsqueeze(1))
-                viz_pred = detach_2_np(torch.nn.Softmax(dim=1)(model_out.reconst))
+            # visualize images from the first batch
+            if self.exp_cfg.wandb and i == 0:
+                viz_gt = detach_2_np(batch_data['mask_in'])
+                viz_pred = detach_2_np(model_out.reconst)
                 
         losses = self._aggregate_losses(losses)
         self._log_epoch_summary(epochID, mode, losses)
@@ -173,7 +134,7 @@ class VAETrainer(object):
                 self._epoch(mode, epochID)
 
 
-class VAETrainerBuilder(object):
+class MultiStageVAETrainerBuilder(object):
     """VAE Trainer Builder Class
     """
 
@@ -192,5 +153,5 @@ class VAETrainerBuilder(object):
             VAETrainer: Instantiated VAE trainer object
         """
         if not self._instance:
-            self._instance = VAETrainer(data_cfg=data_cfg, model_cfg=model_cfg, exp_cfg=exp_cfg)
+            self._instance = MultiStageVAETrainer(data_cfg=data_cfg, model_cfg=model_cfg, exp_cfg=exp_cfg)
         return self._instance

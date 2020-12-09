@@ -16,7 +16,7 @@ from visualization import wandb_utils
 from utils.utils import dict_to_device, detach_2_np, copy_state_dict
 
 
-class VAETrainer(object):
+class MarkovVAETrainer(object):
     def __init__(self, data_cfg, model_cfg, exp_cfg):
         self.data_cfg = data_cfg
         self.model_cfg = model_cfg
@@ -137,15 +137,22 @@ class VAETrainer(object):
             batch_data = dict_to_device(next(data_iter), self.device)
 
             if mode.__eq__('train'):
-                model_out = self.model(batch_data["mask_out"].unsqueeze(1))
+                model_out = self.model(batch_data["mask_in"])
             else:
                 with torch.no_grad():
-                    model_out = self.model(batch_data["mask_out"].unsqueeze(1))
+                    model_out = self.model(batch_data["mask_in"])
 
-            reconst_loss = eval(self.model_cfg.reconstruction_loss)(model_out.reconst, batch_data['mask_out'], self.model_cfg.loss_weights['reconstruction'])
-            kld = KL(model_out.mu, model_out.log_var)
+            reconst_loss = eval(self.model_cfg.reconstruction_loss)(model_out.decoded, batch_data['mask_out'], self.model_cfg.loss_weights['reconstruction'])
+            kld = [KL(model_out.mu[vae_stage], model_out.log_var[vae_stage]) for vae_stage in range(len(model_out.mu))] # separate Kld for each VAE
+            if self.model_cfg.loss_weights['bin'] > 0:
+                bin_loss = binarization_loss(model_out.decoded)
+                losses['binarization_loss'].append(bin_loss.item())
+            else:
+                bin_loss = 0
 
-            loss = reconst_loss + self.model_cfg.loss_weights['kld'] * kld
+            loss = reconst_loss \
+                + sum([self.model_cfg.loss_weights['kld'][vae_stage] * kld[vae_stage] for vae_stage in range(len(kld))]) \
+                + self.model_cfg.loss_weights['bin'] * bin_loss
 
             if mode.__eq__('train'):
                 self._backprop(loss)
@@ -155,30 +162,34 @@ class VAETrainer(object):
 
             losses['total_loss'].append(loss.item())
             losses['reconstruction_loss'].append(reconst_loss.item())
-            losses['KL-divergence'].append(kld.item())
+            for vae_stage in range(len(kld)):
+                losses['KL-divergence-{}'.format(vae_stage)].append(kld[vae_stage].item())
 
             # visualize images from the last batch
             if self.exp_cfg.wandb and i == len(iterator) - 1:
-                viz_gt = detach_2_np(batch_data['mask_out'].unsqueeze(1))
-                viz_pred = detach_2_np(torch.nn.Softmax(dim=1)(model_out.reconst))
+                viz_gt = detach_2_np(batch_data['mask_in'])
+                viz_pred = detach_2_np(model_out.decoded)
                 
         losses = self._aggregate_losses(losses)
         self._log_epoch_summary(epochID, mode, losses)
         if self.exp_cfg.wandb:
             wandb_utils.visualize_images(epochID, mode, viz_gt, viz_pred)
+        return losses
 
     def train(self):
         for epochID in range(self.model_cfg.epochs):
             for mode in self.model_cfg.modes:
-                self._epoch(mode, epochID)
+                losses = self._epoch(mode, epochID)
+                if mode == 'val':
+                    self.compare_and_save(losses['total_loss'], epochID)
 
 
-class VAETrainerBuilder(object):
-    """VAE Trainer Builder Class
+class MarkovVAETrainerBuilder(object):
+    """MarkovVAE Trainer Builder Class
     """
 
     def __init__(self):
-        """VAE Trainer Builder Class Constructor
+        """MarkovVAE Trainer Builder Class Constructor
         """
         self._instance = None
 
@@ -189,8 +200,8 @@ class VAETrainerBuilder(object):
             model_cfg (Config): Model Config object
             exp_cfg (Config): Experiment Config object
         Returns:
-            VAETrainer: Instantiated VAE trainer object
+            MarkovVAETrainer: Instantiated MarkovVAE trainer object
         """
         if not self._instance:
-            self._instance = VAETrainer(data_cfg=data_cfg, model_cfg=model_cfg, exp_cfg=exp_cfg)
+            self._instance = MarkovVAETrainer(data_cfg=data_cfg, model_cfg=model_cfg, exp_cfg=exp_cfg)
         return self._instance

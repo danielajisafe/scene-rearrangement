@@ -39,3 +39,40 @@ def dict_to_device(d_ten: dict, device):
 def detach_2_np(x: torch.tensor):
     return x.detach().cpu().numpy()
     
+def copy_state_dict(cur_state_dict, pre_state_dict, prefix=""):
+    """
+        Load parameters
+    Args:
+        cur_state_dict (dict): current parameters
+        pre_state_dict ([type]): load parameters
+        prefix (str, optional): specific module names. Defaults to "".
+    """
+
+    def _get_params(key):
+        key = prefix + key
+        try:
+            out = pre_state_dict[key]
+        except Exception:
+            try:
+                out = pre_state_dict[key[7:]]
+            except Exception:
+                try:
+                    out = pre_state_dict["module." + key]
+                except Exception:
+                    try:
+                        out = pre_state_dict[key[14:]]
+                    except Exception:
+                        out = None
+        return out
+
+    for k in cur_state_dict.keys():
+        v = _get_params(k)
+        try:
+            if v is None:
+                logging.info("parameter {} not found".format(k))
+                continue
+            cur_state_dict[k].copy_(v)
+        except Exception:
+            logging.info("copy param {} failed".format(k))
+            continue
+            
