@@ -7,7 +7,7 @@ import numpy as np
 class STEFunction(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input):
-        return (input > 0).float()
+        return (input > 0.5).float()
 
     @staticmethod
     def backward(ctx, grad_output):

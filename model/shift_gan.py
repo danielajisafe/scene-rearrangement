@@ -136,7 +136,7 @@ class ShiftGAN(BaseVAE):
             shifts = shifts * torch.tensor([W, H]).to(self.device)
 
         shifted = K.translate(decoded, shifts)
-        return shifted
+        return shifted, shifts
         
     def forward(self, input):
         '''
@@ -148,12 +148,13 @@ class ShiftGAN(BaseVAE):
             mu, log_var, shift_mu, shift_logvar = self.encode(stage, input[:, stage:stage+1])
             z = self.reparameterize(mu, log_var)
             decoded = self.decode(stage, z)
-            shifted = self.shift_img(stage, decoded, shift_mu, shift_logvar)
+            shifted, shifts = self.shift_img(stage, decoded, shift_mu, shift_logvar)
 
             vae_outputs['mu'].append(mu)
             vae_outputs['log_var'].append(log_var)
             vae_outputs['decoded'].append(decoded)
             vae_outputs['shifted'].append(shifted)
+            vae_outputs['shifts'].append(shifts)
 
         vae_outputs['decoded'] = torch.cat(vae_outputs['decoded'], dim=1)
         vae_outputs['shifted'] = nn.Softmax(dim=1)(torch.cat(vae_outputs['shifted'], dim=1))

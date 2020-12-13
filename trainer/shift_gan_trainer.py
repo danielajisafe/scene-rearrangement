@@ -173,12 +173,15 @@ class ShiftGANTrainer(object):
             else:
                 bin_loss = 0
 
+            shift_hinge = hinge_loss(model_out.shifts)
+
             vae_adv_loss = eval(self.model_cfg.adv_loss)(disc_fake, mode='real')
 
             vae_loss = reconst_loss \
                 + sum([self.model_cfg.loss_weights['kld'][vae_stage] * kld[vae_stage] for vae_stage in range(len(kld))]) \
                 + self.model_cfg.loss_weights['bin'] * bin_loss \
-                + self.model_cfg.loss_weights['adv'] * vae_adv_loss
+                + self.model_cfg.loss_weights['adv'] * vae_adv_loss \
+                + self.model_cfg.loss_weights['hinge'] * shift_hinge
 
             disc_real_loss = eval(self.model_cfg.adv_loss)(disc_real, mode='real')
             disc_fake_loss = eval(self.model_cfg.adv_loss)(disc_fake.detach(), mode='fake')
