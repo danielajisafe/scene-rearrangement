@@ -158,12 +158,12 @@ class ShiftGANTrainer(object):
             if mode.__eq__('train'):
                 model_out = self.model(batch_data["mask_in"])
                 disc_real = self.model.disc_forward(batch_data["adv_mask"])
-                disc_fake = self.model.disc_forward(model_out.shifted)
+                disc_fake = self.model.disc_forward(self.model.STE(model_out.shifted))
             else:
                 with torch.no_grad():
                     model_out = self.model(batch_data["mask_in"])
                     disc_real = self.model.disc_forward(batch_data["adv_mask"])
-                    disc_fake = self.model.disc_forward(model_out.shifted)
+                    disc_fake = self.model.disc_forward(self.model.STE(model_out.shifted))
 
             reconst_loss = eval(self.model_cfg.reconstruction_loss)(model_out.decoded, batch_data['mask_out'], self.model_cfg.loss_weights['reconstruction'])
             kld = [KL(model_out.mu[vae_stage], model_out.log_var[vae_stage]) for vae_stage in range(len(model_out.mu))] # separate Kld for each VAE

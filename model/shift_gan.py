@@ -128,7 +128,7 @@ class ShiftGAN(BaseVAE):
             )
 
     def shift_img(self, stage, decoded, shift_mu, shift_logvar):
-        if stage in self.cfg.shift_classes:
+        if stage not in self.cfg.shift_classes:
             shifts = torch.zeros((decoded.shape[0], 2)).to(self.device)
         else:
             N, C, H, W = decoded.shape
@@ -148,7 +148,7 @@ class ShiftGAN(BaseVAE):
             mu, log_var, shift_mu, shift_logvar = self.encode(stage, input[:, stage:stage+1])
             z = self.reparameterize(mu, log_var)
             decoded = self.decode(stage, z)
-            shifted = self.STE(self.shift_img(stage, decoded, shift_mu, shift_logvar))
+            shifted = self.shift_img(stage, decoded, shift_mu, shift_logvar)
 
             vae_outputs['mu'].append(mu)
             vae_outputs['log_var'].append(log_var)
