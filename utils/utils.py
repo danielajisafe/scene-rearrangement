@@ -4,6 +4,24 @@ import logging
 import numpy as np
 
 
+class STEFunction(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, input):
+        return (input > 0).float()
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        return torch.nn.functional.hardtanh(grad_output)
+
+class StraightThroughEstimator(torch.nn.Module):
+    def __init__(self):
+        super(StraightThroughEstimator, self).__init__()
+
+    def forward(self, x):
+        x = STEFunction.apply(x)
+        return x
+
+
 def seed_everything(seed=0, harsh=False):
     """
     Seeds all important random functions

@@ -7,6 +7,7 @@ from collections import namedtuple, defaultdict
 
 from model.base import BaseVAE
 from model.network import Network
+from utils.utils import StraightThroughEstimator
 
 
 class ShiftGAN(BaseVAE):
@@ -17,6 +18,7 @@ class ShiftGAN(BaseVAE):
         super(ShiftGAN, self).__init__()
         self._init_vaes()
         self._build_discriminator()
+        self.STE = StraightThroughEstimator()
 
     def _build_encoder(self):
         pass
@@ -146,7 +148,7 @@ class ShiftGAN(BaseVAE):
             mu, log_var, shift_mu, shift_logvar = self.encode(stage, input[:, stage:stage+1])
             z = self.reparameterize(mu, log_var)
             decoded = self.decode(stage, z)
-            shifted = self.shift_img(stage, decoded, shift_mu, shift_logvar)
+            shifted = self.STE(self.shift_img(stage, decoded, shift_mu, shift_logvar))
 
             vae_outputs['mu'].append(mu)
             vae_outputs['log_var'].append(log_var)
