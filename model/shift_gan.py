@@ -44,7 +44,11 @@ class ShiftGAN(BaseVAE):
 
         mu = self.fc_mus[idx](result)
         log_var = self.fc_vars[idx](result)
-        shift = self.fc_shifts[idx](result)
+
+        if idx in self.cfg.shift_classes:
+            shift = self.fc_shifts[idx](result)
+        else:
+            shift = torch.zeros((input.shape[0], 2)).to(self.device)
 
         return mu, log_var, shift
 
