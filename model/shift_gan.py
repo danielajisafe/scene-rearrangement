@@ -45,12 +45,10 @@ class ShiftGAN(BaseVAE):
         mu = self.fc_mus[idx](result)
         log_var = self.fc_vars[idx](result)
 
-        if idx in self.cfg.shift_classes:
-            shift = self.fc_shifts[idx](result)
-        else:
-            shift = torch.zeros((input.shape[0], 2)).to(self.device)
+        shift_mu = self.shift_mus[idx](result)
+        shift_logvar = self.shift_vars[idx](result)
 
-        return mu, log_var, shift
+        return mu, log_var, shift_mu, shift_logvar
 
     def reparameterize(self, mu, logvar):
         """
@@ -101,9 +99,14 @@ class ShiftGAN(BaseVAE):
                     Network(self.cfg.network['fc_var']) for i in range(self.cfg.n_classes)
                 ]
             )
-        self.fc_shifts = nn.ModuleList(
+        self.shift_mus = nn.ModuleList(
                 [
-                    Network(self.cfg.network['fc_shift']) for i in range(self.cfg.n_classes)
+                    Network(self.cfg.network['shift_mu']) for i in range(self.cfg.n_classes)
+                ]
+            )
+        self.shift_vars = nn.ModuleList(
+                [
+                    Network(self.cfg.network['shift_var']) for i in range(self.cfg.n_classes)
                 ]
             )
         self.decoders_fc = nn.ModuleList(
@@ -122,11 +125,15 @@ class ShiftGAN(BaseVAE):
                 ]
             )
 
-    def shift_img(self, decoded, shifts:torch.Tensor):
-        N, C, H, W = decoded.shape
-        shifts = shifts * torch.tensor([W, H]).to(self.device)
-        shifted = K.translate(decoded, shifts)
+    def shift_img(self, stage, decoded, shift_mu, shift_logvar):
+        if stage in self.cfg.shift_classes:
+            shifts = torch.zeros((decoded.shape[0], 2)).to(self.device)
+        else:
+            N, C, H, W = decoded.shape
+            shifts = self.reparameterize(shift_mu, shift_logvar)
+            shifts = shifts * torch.tensor([W, H]).to(self.device)
 
+        shifted = K.translate(decoded, shifts)
         return shifted
         
     def forward(self, input):
@@ -136,10 +143,10 @@ class ShiftGAN(BaseVAE):
         self.decoder_intermediates = list()
         vae_outputs = defaultdict(list)
         for stage in range(self.cfg.n_classes):
-            mu, log_var, shift = self.encode(stage, input[:, stage:stage+1])
+            mu, log_var, shift_mu, shift_logvar = self.encode(stage, input[:, stage:stage+1])
             z = self.reparameterize(mu, log_var)
             decoded = self.decode(stage, z)
-            shifted = self.shift_img(decoded, shift)
+            shifted = self.shift_img(stage, decoded, shift_mu, shift_logvar)
 
             vae_outputs['mu'].append(mu)
             vae_outputs['log_var'].append(log_var)
