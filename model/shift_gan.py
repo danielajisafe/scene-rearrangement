@@ -156,7 +156,7 @@ class ShiftGAN(BaseVAE):
             vae_outputs['shifted'].append(shifted)
 
         vae_outputs['decoded'] = torch.cat(vae_outputs['decoded'], dim=1)
-        vae_outputs['shifted'] = torch.cat(vae_outputs['shifted'], dim=1)
+        vae_outputs['shifted'] = nn.Softmax(dim=1)(torch.cat(vae_outputs['shifted'], dim=1))
         model_out_tuple = namedtuple(
             "model_out", vae_outputs
         )
