@@ -1,15 +1,17 @@
 experiment:
   description: initial reconstruction test with semantic_rgb images
-  output_location: path to where trained models should be saved (#TODO)
-  run_name: multistage_B32_L1.2.7
+  output_location: ../Models/scene-reconstruction
+  load: ../Models/scene-reconstruction/multi_stage_vae_19.pth
+  init_opt: False
+  run_name: multistage
 data:
   sources:
     - kitti360_semantic_1hot:
-        train: ../Datasets/Kitti360/data_2d_semantics/train  #TODO ERIC
-        val: path to folder containing validation data
+        train: ../Datasets/Kitti360/data_2d_semantics/train
+        val: ../Datasets/Kitti360/data_2d_semantics/valid
         test: path to folder containing test data
-        batch_size: 32  #TODO ERIC
-        sample_size: null  #TODO ERIC
+        batch_size: 32
+        sample_size: null
         crop_size: 224
   num_workers: 5
 
@@ -18,131 +20,131 @@ model:
   trainer_key: multi_stage_vae_trainer
   modes:
     - train
+    - val
   epochs: 100
   n_classes: 3
   # what loss to use for reconstruction? If "mse" or "mae" then change output channel to match input channel below
   reconstruction_loss: cross_entropy
   loss_weights:
     reconstruction: [0.2, 0.2, 0.6]
-    kld: [0.0001, 0.0001, 0.0001]  #for each object category. Currently shape = 3 = ['Vehicle', 'Road', 'Background']
+    kld: [0.0001, 0.0001, 0.0001]  #for each object category. Currently shape = 3 = ['Background', 'Road', 'Vehicle']
     bin: 0
   network:
-
     encoder0:    #TODO ERIC
       - Conv2d:
           in_channels: 1
-          out_channels: 16      # out shape = 16x111x111
+          out_channels: 32      # out shape = 32x111x111
           kernel_size: 3
           stride: 2
         activation: LeakyReLU
 
     encoder1:   #TODO ERIC  in multi_stage_vae.py
       - Conv2d:
-          in_channels: 16
-          out_channels: 32      # out shape = 32x55x55
+          in_channels: 32
+          out_channels: 64      # out shape = 64x55x55
           kernel_size: 3
           stride: 2
         activation: LeakyReLU
-      - MaxPool2d:              # out shape = 32x27x27
+      - MaxPool2d:              # out shape = 64x27x27
           kernel_size: 2
           stride: 2
 
     encoder2:    #TODO ERIC  in multi_stage_vae.py
       - Conv2d:
-          in_channels: 32
-          out_channels: 64      # out shape = 64x13x13
+          in_channels: 64
+          out_channels: 128      # out shape = 128x13x13
           kernel_size: 3
           stride: 2
         activation: LeakyReLU
 
     encoder3:   #TODO ERIC  in multi_stage_vae.py
       - Conv2d:
-          in_channels: 64
-          out_channels: 128     # out shape = 128x6x6
+          in_channels: 128
+          out_channels: 256     # out shape = 256x6x6
           kernel_size: 3
           stride: 2
         activation: LeakyReLU
 
     encoder4:    #TODO ERIC  in multi_stage_vae.py
       - Conv2d:
-          in_channels: 128
-          out_channels: 128     # out shape = 128x2x2
+          in_channels: 256
+          out_channels: 512     # out shape = 512x2x2
           kernel_size: 3
           stride: 2
         activation: LeakyReLU
 
     encoder_fc:    #TODO ERIC
       - Linear:
-          in_features: 512
-          out_features: 256
+          in_features: 2048
+          out_features: 1024
         activation: LeakyReLU
         dropout: 0.5
       - Linear:
-          in_features: 256
-          out_features: 128
+          in_features: 1024
+          out_features: 512
         activation: LeakyReLU
         dropout: 0.5
 
     fc_mu: #TODO ERIC
       - Linear:
-          in_features: 128
+          in_features: 512
           out_features: 256
-        activation: LeakyReLU
+#        activation: LeakyReLU
 
     fc_var: #TODO ERIC
       - Linear:
-          in_features: 128
+          in_features: 512
           out_features: 256
-        activation: LeakyReLU
+#        activation: LeakyReLU
 
     decoder_fc: #TODO ERIC
-      - Linear:
-          in_features: 32
-          out_features: 128
-        activation: LeakyReLU
-      - Linear:
-          in_features: 128
-          out_features: 256
-        activation: LeakyReLU
       - Linear:
           in_features: 256
           out_features: 512
         activation: LeakyReLU
+      - Linear:
+          in_features: 512
+          out_features: 1024
+        activation: LeakyReLU
+      - Linear:
+          in_features: 1024
+          out_features: 2048
+        activation: LeakyReLU
 
     decoder0:  #TODO ERIC  in multi_stage_vae.py
       - ConvTranspose2d:
-          in_channels: 128      # in shape = 128x2x2
-          out_channels: 64      # out shape = 64x6x6
+          in_channels: 512      # in shape = 512x2x2
+          out_channels: 256      # out shape = 256x6x6
           kernel_size: 3
           stride: 3
         activation: LeakyReLU
     decoder1:  #TODO ERIC  in multi_stage_vae.py
       - ConvTranspose2d:
-          in_channels: 64
-          out_channels: 32      # out shape = 32x13x13
+          in_channels: 256
+          out_channels: 128      # out shape = 128x13x13
           kernel_size: 3
           stride: 2
         activation: LeakyReLU
     decoder2:  #TODO ERIC  in multi_stage_vae.py
       - ConvTranspose2d:
-          in_channels: 32
-          out_channels: 16      # out shape = 16x27x27
+          in_channels: 128
+          out_channels: 64      # out shape = 64x27x27
           kernel_size: 3
           stride: 2
         activation: LeakyReLU
       - Upsample:
-          scale_factor: 2       # out shape = 16x54x54
+          scale_factor: 2       # out shape = 64x54x54
     decoder3:  #TODO ERIC  in multi_stage_vae.py
       - ConvTranspose2d:
-          in_channels: 16
-          out_channels: 8       # out shape = 8x109x109
+          in_channels: 64
+          out_channels: 32       # out shape = 32x109x109
           kernel_size: 3
           stride: 2
         activation: LeakyReLU
     decoder4:  #TODO ERIC  in multi_stage_vae.py
       - ConvTranspose2d:
-          in_channels: 8
-          out_channels: 4       # out shape = 4x219x219
+          in_channels: 32
+          out_channels: 1       # out shape = 1x219x219
           kernel_size: 3
           stride: 2
       - Upsample:

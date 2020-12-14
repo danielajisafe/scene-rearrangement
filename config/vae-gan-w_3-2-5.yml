@@ -1,19 +1,20 @@
 experiment:
   description: VAE-WGAN with revised cross_entropy weights
-  output_location: /data/namrata/models/scene-reconstruction
-  load: null
+  output_location: ../Models/scene-reconstruction
+  load: ../Models/scene-reconstruction/vae_gan_60.pth
   init_opt: False
+  run_name: vae_gan
 
 data:
   sources:
     - kitti360_semantic_adv:
-        train: /data/namrata/kitti-360/data_2d_semantics/train
-        val: /data/namrata/kitti-360/data_2d_semantics/val
+        train: ../Datasets/Kitti360/data_2d_semantics/train
+        val: ../Datasets/Kitti360/data_2d_semantics/valid
         test: path to folder containing test data
-        batch_size: 32
+        batch_size: 128
         sample_size: null
         crop_size: 224
-  num_workers: 10
+  num_workers: 5
 
 model:
   model_key: vae_gan

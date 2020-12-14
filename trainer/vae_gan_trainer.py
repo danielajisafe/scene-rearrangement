@@ -13,7 +13,7 @@ from data import data
 from model import model
 from losses.losses import *
 from visualization import wandb_utils
-from utils.utils import dict_to_device, detach_2_np, copy_state_dict
+from utils.utils import dict_to_device, detach_2_np, copy_state_dict, write_images
 
 
 class VAEGANTrainer(object):
@@ -217,13 +217,68 @@ class VAEGANTrainer(object):
                 if mode == 'val':
                     self.compare_and_save(losses['total_loss'], epochID)
 
-    def rearrange(self, mode, index, rearrange_coefficients):
-        batch_data = self.datasets[mode][0][0][index]
+    def test(self):
         self.model.eval()
-        with torch.no_grad():
-            model_out = self.model.rearrange(batch_data["mask_in"].unsqueeze(0).to(self.device), rearrange_coefficients)
-            viz_pred = np.asarray(detach_2_np(torch.nn.Softmax(dim=1)(model_out.decoded)))
-        return batch_data, model_out, viz_pred
+
+        for param in self.model.parameters():
+            param.requires_grad = False
+
+        data_iter = iter(self.dataloaders['val']["kitti360_semantic_adv"])
+        iterator = tqdm(range(len(self.dataloaders['val']["kitti360_semantic_adv"])), dynamic_ncols=True)
+
+        src_data_path = '../Datasets/Kitti360/data_2d_semantics/valid'
+        model_run_name = self.exp_cfg.run_name  # multistage
+        dest_data_path = src_data_path + '_' + model_run_name
+
+        for i in iterator:
+            batch_data = dict_to_device(next(data_iter), self.device)
+
+            addr_list = batch_data["addr"]
+
+            # ----------- encoding and reconstructing input mask -----------------
+            model_out = self.model(batch_data["mask_in"])
+            mu_list = model_out.mu
+            initial_estimate = (model_out.decoded)
+            initial_estimate = torch.nn.Softmax(dim=1)(initial_estimate)
+            write_images(i, initial_estimate, "reconstructed", addr_list, dest_data_path)
+
+            # ----------- Optimization of car mu encoding based on next image's car -----------
+            mse_loss = torch.nn.MSELoss()
+
+            mu_list[2].requires_grad = True
+
+            target_image = [batch_data["mask_in"][(j + 1) % len(batch_data["mask_in"])] for j in range(len(batch_data["mask_in"]))]
+            target_image = torch.stack(target_image)
+
+            optimizer = optim.Adam([mu_list[2]], lr=1e-3)
+
+            # optimization loop for mu
+            for opt_iteration in tqdm(range(self.exp_cfg.optimization_iterations)):
+                optimizer.zero_grad()
+
+                car_mask = self.model.decode_sample(2, mu_list[2])
+                x_hat = torch.cat([model_out.decoded[:,0:2], car_mask], dim=1)
+                x_hat = torch.nn.Softmax(dim=1)(x_hat)
+
+                # optimizing based on the car mask
+                loss = mse_loss(target_image[:, 2], x_hat[:, 2])
+
+                iterator.set_description("Loss: {:.4f}".format(loss.item()), refresh=True)
+                loss.backward()
+                optimizer.step()
+
+            # reconstruct new image
+            car_mask = self.model.decode_sample(2, mu_list[2])
+            final_image = torch.cat([model_out.decoded[:, 0:2], car_mask], dim=1)
+            final_image = torch.nn.Softmax(dim=1)(final_image)
+            write_images(i, final_image.detach(), "optimized", addr_list, dest_data_path)
+
+            # visualize images from the last batch
+            if self.exp_cfg.wandb:
+                viz_gt = detach_2_np(batch_data['mask_in'])
+                viz_reconstruction = detach_2_np(initial_estimate)
+                viz_rearranged = detach_2_np(final_image)
+                wandb_utils.visualize_GuidedRearranged_Images(i, 'val', viz_gt, viz_reconstruction, viz_rearranged)
 
 
 class VAEGANTrainerBuilder(object):

@@ -14,39 +14,6 @@ class MultiStageVAE(BaseVAE):
         super(MultiStageVAE, self).__init__()
 
     def _build_encoder(self):
-        # ----------------------------  METHOD 1 --------------------------------
-        # -------------------------------------
-        # -----------  first VAE -------------
-        # -------------------------------------
-        # k_size = 3
-        # stride = 2
-        # self.encoder0 = [Network(self.cfg.network["encoder0"])]  # out shape = 16x111x111
-        # self.encoder1 = [Network(self.cfg.network["encoder1"])]  # out shape = 32x27x27
-        # self.encoder2 = [Network(self.cfg.network["encoder2"])]  # out shape = 64x13x13
-        # self.encoder3 = [Network(self.cfg.network["encoder3"])]  # out shape = 128x6x6
-        # self.encoder4 = [Network(self.cfg.network["encoder4"])]  # out shape = 128x2x2
-        # # -------------------------------------
-        # # -----------  2nd VAE -------------
-        # # -------------------------------------
-        # self.encoder0.append(Network(self.cfg.network["encoder0"]))  # out shape = 16x111x111
-        # self.encoder1.append(nn.Sequential(nn.Conv2d(16 * 2, 32, k_size, stride),  # out shape = 32x27x27
-        #                                    nn.LeakyReLU(),
-        #                                    nn.MaxPool2d(2, 2)))
-        # self.encoder2.append(nn.Sequential(nn.Conv2d(32 * 2, 64, k_size, stride),  # out shape = 32x27x27
-        #                                    nn.LeakyReLU()))
-        # # method 2
-        # # self.cfg.network['encoder1'][0]['Conv2d']['in_channels'] *= classes+1
-        # # self.encoder1.append(Network(self.cfg.network["encoder1"]))
-        #
-        # # -------------------------------------
-        # # -----------  3rd VAE -------------
-        # # -------------------------------------
-        # self.encoder0.append(Network(self.cfg.network["encoder0"]))  # out shape = 16x111x111
-        # self.encoder1.append(nn.Sequential(nn.Conv2d(16 * 3, 32, k_size, stride),  # out shape = 32x27x27
-        #                                    nn.LeakyReLU(),
-        #                                    nn.MaxPool2d(2, 2)))
-        # self.encoder2.append(nn.Sequential(nn.Conv2d(32 * 3, 64, k_size, stride),  # out shape = 32x27x27
-        #                                    nn.LeakyReLU()))
 
         # ----------------------------  METHOD 2 --------------------------------
         # -------------------------------------
@@ -60,14 +27,14 @@ class MultiStageVAE(BaseVAE):
         self.encoder3 = nn.ModuleList([])
         self.encoder4 = nn.ModuleList([])
         for vae_stage in range(self.cfg.n_classes): # a for loop to build the encoders of all our vae stages
-            self.encoder1.append(nn.Sequential(nn.Conv2d(16 * (vae_stage+1), 32, k_size, stride),  # out shape = 32x27x27    #TODO ERIC  in multi_stage_vae.py
+            self.encoder1.append(nn.Sequential(nn.Conv2d(32 * (vae_stage+1), 64, k_size, stride),  # out shape = 32x27x27    #TODO ERIC  in multi_stage_vae.py
                                                nn.LeakyReLU(),
                                                nn.MaxPool2d(2, 2)))
-            self.encoder2.append(nn.Sequential(nn.Conv2d(32 * (vae_stage+1), 64, k_size, stride),  # out shape = 64x13x13    #TODO ERIC  in multi_stage_vae.py
+            self.encoder2.append(nn.Sequential(nn.Conv2d(64 * (vae_stage+1), 128, k_size, stride),  # out shape = 64x13x13    #TODO ERIC  in multi_stage_vae.py
                                                nn.LeakyReLU()))
-            self.encoder3.append(nn.Sequential(nn.Conv2d(64 * (vae_stage+1), 128, k_size, stride), # out shape = 128x6x6    #TODO ERIC  in multi_stage_vae.py
+            self.encoder3.append(nn.Sequential(nn.Conv2d(128 * (vae_stage+1), 256, k_size, stride), # out shape = 128x6x6    #TODO ERIC  in multi_stage_vae.py
                                                nn.LeakyReLU()))
-            self.encoder4.append(nn.Sequential(nn.Conv2d(128 * (vae_stage+1), 128, k_size, stride), # out shape = 128x2x2   #TODO ERIC  in multi_stage_vae.py
+            self.encoder4.append(nn.Sequential(nn.Conv2d(256 * (vae_stage+1), 512, k_size, stride), # out shape = 128x2x2   #TODO ERIC  in multi_stage_vae.py
                                                nn.LeakyReLU()))
 
         # -------------------------------------
@@ -92,18 +59,18 @@ class MultiStageVAE(BaseVAE):
         self.decoder3 = nn.ModuleList([])
         self.decoder4 = nn.ModuleList([])
         for vae_stage in range(self.cfg.n_classes): # a for loop to build the decoders of all our vae stages
-            self.decoder0.append(nn.Sequential(nn.ConvTranspose2d(128 * (vae_stage+1), 64, k_size, 3),  # out shape = 64x6x6  #TODO ERIC  in multi_stage_vae.py
+            self.decoder0.append(nn.Sequential(nn.ConvTranspose2d(512 * (vae_stage+1), 256, k_size, 3),  # out shape = 64x6x6  #TODO ERIC  in multi_stage_vae.py
                                                nn.LeakyReLU(),))
-            self.decoder1.append(nn.Sequential(nn.ConvTranspose2d(64 * (vae_stage+1), 32, k_size, stride),  # out shape = 32x13x13 #TODO ERIC  in multi_stage_vae.py
+            self.decoder1.append(nn.Sequential(nn.ConvTranspose2d(256 * (vae_stage+1), 128, k_size, stride),  # out shape = 32x13x13 #TODO ERIC  in multi_stage_vae.py
                                                nn.LeakyReLU(),))
-            self.decoder2.append(nn.Sequential(nn.ConvTranspose2d(32 * (vae_stage+1), 16, k_size, stride),  # out shape = 16x27x27 #TODO ERIC  in multi_stage_vae.py
+            self.decoder2.append(nn.Sequential(nn.ConvTranspose2d(128 * (vae_stage+1), 64, k_size, stride),  # out shape = 16x27x27 #TODO ERIC  in multi_stage_vae.py
                                                nn.LeakyReLU(),
                                                nn.Upsample(scale_factor= 2)))                           # out shape = 16x54x54
-            self.decoder3.append(nn.Sequential(nn.ConvTranspose2d(16 * (vae_stage+1), 8, k_size, stride), # out shape = 8x109x109 #TODO ERIC  in multi_stage_vae.py
+            self.decoder3.append(nn.Sequential(nn.ConvTranspose2d(64 * (vae_stage+1), 32, k_size, stride), # out shape = 8x109x109 #TODO ERIC  in multi_stage_vae.py
                                                nn.LeakyReLU(),))
-            self.decoder4.append(nn.Sequential(nn.ConvTranspose2d(8 * (vae_stage+1), 1, k_size, stride),   # out shape = 1x219x219 #TODO ERIC  in multi_stage_vae.py
-                                               nn.Upsample(size=224),  # TODO need better final size maybe? using the crop size input
-                                               nn.Sigmoid()))
+            self.decoder4.append(nn.Sequential(nn.ConvTranspose2d(32 * (vae_stage+1), 1, k_size, stride),   # out shape = 1x219x219 #TODO ERIC  in multi_stage_vae.py
+                                               nn.Upsample(size=224),))  # TODO need better final size maybe? using the crop size input
+                                               # nn.Sigmoid()))
 
     def encode(self, input):
         '''
@@ -145,9 +112,8 @@ class MultiStageVAE(BaseVAE):
 
     def decode(self, z):
         result = [self.decoder_fc[vae_stage](z[vae_stage]) for vae_stage in range(self.cfg.n_classes)]
-        # result = result.view(-1, 512, 2, 2)
         # TODO fix this part to be nicer :)
-        result = [result[vae_stage].view(-1, 128, 2, 2) for vae_stage in range(self.cfg.n_classes)] #TODO ERIC
+        result = [result[vae_stage].view(-1, 512, 2, 2) for vae_stage in range(self.cfg.n_classes)] #TODO ERIC
 
         result_decoder0 = []
         result_decoder1 = []
