@@ -36,6 +36,10 @@ def elbo(mu, log_var, z, reconst, input):
 def binarization_loss(mask):
     return torch.min(1-mask, mask).mean()
 
+def hinge_loss(shifts):
+    shifts = torch.cat(shifts, dim=0)
+    return F.relu(0.02 - torch.norm(shifts, dim=1)).mean()
+
 def adversarial_loss(disc_value, mode='fake'):
     if mode.__eq__('fake'):
         target = torch.zeros_like(disc_value)

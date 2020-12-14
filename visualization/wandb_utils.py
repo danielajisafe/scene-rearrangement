@@ -22,15 +22,19 @@ def log_epoch_summary(epochID:int, mode:str, losses:dict):
 
     wandb.log(logs, step=epochID)
 
-def visualize_images(epochID, mode, gt_image, pred_image):
-    grid = np.zeros((8, gt_image.shape[1], gt_image.shape[2], gt_image.shape[3]))
+def visualize_images(epochID, mode, gt_image, pred_image, shift_image=None):
+    grid = np.zeros((12, gt_image.shape[1], gt_image.shape[2], gt_image.shape[3]))
 
     if pred_image.shape[1] != gt_image.shape[1]:
         pred_image = np.expand_dims(pred_image.argmax(axis=1), 1)
+        if shift_image is not None:
+            shift_image = np.expand_dims(shift_image.argmax(axis=1), 1)
 
-    for i in range(grid.shape[0]//2):
+    for i in range(grid.shape[0]//3):
         grid[i] = gt_image[i]
         grid[i+4] = pred_image[i]
+        if shift_image is not None:
+            grid[i+8] = shift_image[i]
 
     grid = vutils.make_grid(torch.from_numpy(grid), nrow=4, normalize=True, scale_each=True)
 
