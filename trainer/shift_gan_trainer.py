@@ -13,7 +13,7 @@ from data import data
 from model import model
 from losses.losses import *
 from visualization import wandb_utils
-from utils.utils import dict_to_device, detach_2_np, copy_state_dict
+from utils.utils import dict_to_device, detach_2_np, copy_state_dict, dump_model_output
 
 
 class ShiftGANTrainer(object):
@@ -164,6 +164,9 @@ class ShiftGANTrainer(object):
                     model_out = self.model(batch_data["mask_in"])
                     disc_real = self.model.disc_forward(batch_data["adv_mask"])
                     disc_fake = self.model.disc_forward(self.model.STE(model_out.shifted))
+                    if self.exp_cfg.dump_output:
+                        dump_model_output(model_out.shifted, mode, self.exp_cfg.output_location, batch_data["addr"], flag='shifted')
+                        dump_model_output(torch.nn.Softmax(dim=1)(model_out.decoded), mode, self.exp_cfg.output_location, batch_data["addr"])
 
             reconst_loss = eval(self.model_cfg.reconstruction_loss)(model_out.decoded, batch_data['mask_out'], self.model_cfg.loss_weights['reconstruction'])
             kld = [KL(model_out.mu[vae_stage], model_out.log_var[vae_stage]) for vae_stage in range(len(model_out.mu))] # separate Kld for each VAE

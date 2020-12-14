@@ -1,7 +1,10 @@
+import os
+import cv2
 import torch
 import random
 import logging
 import numpy as np
+from os.path import join, basename
 
 
 class STEFunction(torch.autograd.Function):
@@ -94,4 +97,11 @@ def copy_state_dict(cur_state_dict, pre_state_dict, prefix=""):
         except Exception:
             logging.info("copy param {} failed".format(k))
             continue
-            
+
+def dump_model_output(output, mode, outdir, fname, flag='reconstructed'):
+    outdir = join(outdir, 'outputs', mode, flag)
+    os.makedirs(outdir, exist_ok=True)
+    output = detach_2_np(torch.argmax(output, dim=1))
+    for i, x in enumerate(output):
+        path = join(outdir, '_'.join(fname[i].split('/')[-3::2]))
+        cv2.imwrite(path, cv2.resize(np.array(x, dtype=np.uint8), (256, 256), interpolation=cv2.INTER_NEAREST))
