@@ -21,6 +21,7 @@ Folder structures are as follows:
 - 
 
 - main.py:  starting point. 
+- optimization.py: guided test-time optimization for rearrenging objects in Vanilla VAE
 - config/*.yml:  contains the configuration of each model
 - data/: contains the pytorch dataset classes
 - losses/: contains the loss functions
