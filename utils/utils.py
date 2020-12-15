@@ -5,6 +5,9 @@ import random
 import logging
 import numpy as np
 from os.path import join, basename
+from PIL import Image
+import os.path as path
+import torchvision
 
 
 class STEFunction(torch.autograd.Function):
@@ -105,3 +108,30 @@ def dump_model_output(output, mode, outdir, fname, flag='reconstructed'):
     for i, x in enumerate(output):
         path = join(outdir, '_'.join(fname[i].split('/')[-3::2]))
         cv2.imwrite(path, cv2.resize(np.array(x, dtype=np.uint8), (256, 256), interpolation=cv2.INTER_NEAREST))
+
+def write_images(batch_num, this_batch, folder, addr_list, dest_data_path):
+    # dest_data_path = '../../Datasets/Kitti360/data_2d_semantics/valid_multistage'
+    mask_out = this_batch.cpu().numpy()
+    out_image = np.zeros((len(mask_out), mask_out.shape[2], mask_out.shape[3]))
+    for i in range(mask_out.shape[1]):
+        out_image += i * mask_out[:, i]
+
+    out_image = np.moveaxis(out_image, [0,1,2], [2,0,1])
+    out_image = cv2.resize(out_image, (256, 256), interpolation=cv2.INTER_NEAREST)
+
+    # out_image_int = out_image.ceil().astype(int)
+
+    # this_batch = torchvision.transforms.Resize((256, 256), interpolation=Image.NEAREST)(this_batch).cpu().numpy()
+    # # creating the grayscale segmasks in which each pixel holds the class index
+    # out_image = np.zeros((len(this_batch), 256, 256))
+    # for i in range(this_batch.shape[1]):
+    #     out_image += i * this_batch[:, i]
+
+    #Saving the images as png files
+    for j, addr in enumerate(addr_list):
+        dest_file_name = f'{batch_num}_{j}_' + path.basename(addr)[:-4] + '.png'
+        dest_file_path = path.join(dest_data_path, folder, dest_file_name)
+        if not path.exists(path.dirname(dest_file_path)):
+            os.makedirs(path.dirname(dest_file_path))
+
+        cv2.imwrite(dest_file_path, out_image[:,:,j])

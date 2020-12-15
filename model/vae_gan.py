@@ -136,6 +136,36 @@ class VAEGAN(BaseVAE):
 
         return model_out
 
+    def decode_sample(self, idx, z):
+        '''
+        idx (int): stage of the VAE
+        '''
+        result = self.decoders_fc[idx](z)
+        result = result.view(-1, 512, 2, 2)
+        result = self.decoders_pre[idx](result)
+        result = self.decoders_post[idx](result)
+
+        return result
+
+    # def decode_sample(self, mu_list):
+    #     '''
+    #     input: (N, n_classes, H, W)
+    #     '''
+    #     vae_outputs = defaultdict(list)
+    #     for stage in range(self.cfg.n_classes):
+    #         decoded = self.decode_sample_stage(stage, mu_list[stage])
+    #         vae_outputs['decoded'].append(decoded)
+    #
+    #     vae_outputs['decoded'] = torch.cat(vae_outputs['decoded'], dim=1)
+    #     model_out_tuple = namedtuple(
+    #         "model_out", vae_outputs
+    #     )
+    #     model_out = model_out_tuple(
+    #         **vae_outputs
+    #     )
+    #
+    #     return model_out
+
     def disc_forward(self, x):
         x = self.discriminator(x)
         x = torch.flatten(x, start_dim=1)
@@ -148,7 +178,6 @@ class VAEGAN(BaseVAE):
 
         samples = self.decode(z)
         return samples
-
 
 class VAEGANBuilder(object):
     """VAEGAN Model Builder Class

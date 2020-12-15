@@ -1,0 +1,21 @@
+
+# the GT semantic calculation
+
+mkdir valid_gt
+cp -R --backup=existing --suffix=_0003.png -t valid_gt/ valid/2013_05_28_drive_0003_sync/semantic/
+cp -R --backup=existing --suffix=_0006.png -t valid_gt/ valid/2013_05_28_drive_0006_sync/semantic/
+
+python -m pytorch_fid valid_gt/semantic/ valid_gt/semantic/
+
+
+
+# the gt vs vae_gan semantic calculation
+python -m pytorch_fid valid_gt/ valid_vae_gan/reconstructed/
+python -m pytorch_fid valid_gt/ valid_vae_gan/optimized/
+
+
+# the gt vs vae_multi_stage semantic calculation
+python -m pytorch_fid valid_gt/ valid_multistage/reconstructed/
+python -m pytorch_fid valid_gt/ valid_multistage/optimized/
+
+

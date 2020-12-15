@@ -25,6 +25,7 @@ class VAE(BaseVAE):
         self.decoder_fc = Network(self.cfg.network["decoder_fc"])
         self.decoder = Network(self.cfg.network["decoder"])
 
+
     def encode(self, input):
         result = self.encoder(input)
         result = torch.flatten(result, start_dim=1)
@@ -61,6 +62,7 @@ class VAE(BaseVAE):
             "model_out",
             ["reconst", "mu", "log_var"],
         )
+
         model_out = model_out_tuple(
             self.decode(z), mu, log_var
         )

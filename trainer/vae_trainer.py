@@ -136,6 +136,7 @@ class VAETrainer(object):
         for i in iterator:
             batch_data = dict_to_device(next(data_iter), self.device)
 
+            # for j in tqdm(range(10), desc="inner iterator"):
             if mode.__eq__('train'):
                 model_out = self.model(batch_data["mask_out"].unsqueeze(1))
             else:
@@ -161,7 +162,7 @@ class VAETrainer(object):
             if self.exp_cfg.wandb and i == len(iterator) - 1:
                 viz_gt = detach_2_np(batch_data['mask_out'].unsqueeze(1))
                 viz_pred = detach_2_np(torch.nn.Softmax(dim=1)(model_out.reconst))
-                
+
         losses = self._aggregate_losses(losses)
         self._log_epoch_summary(epochID, mode, losses)
         if self.exp_cfg.wandb:

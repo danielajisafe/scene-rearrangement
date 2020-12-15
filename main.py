@@ -19,7 +19,7 @@ if __name__=="__main__":
         "-v",
         "--version",
         type=str,
-        default="vae_multi_stage.yml",
+        default="vae-gan-w_3-2-5.yml",
         help="name of the config file to use"
         )
     parser.add_argument(
@@ -31,6 +31,9 @@ if __name__=="__main__":
     parser.add_argument(
         "-w", "--wandb", action="store_true", help="Log to wandb"
     )
+    parser.add_argument(
+        "--optimization_iterations", type=int, default=1000, help="targetted_optimization"
+    )
     (args, unknown_args) = parser.parse_known_args()
 
     os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
@@ -39,6 +42,7 @@ if __name__=="__main__":
     cfg["exp_cfg"].version = splitext(args.version)[0]
     cfg["exp_cfg"].run_name = cfg["exp_cfg"].version
     cfg["exp_cfg"].wandb = args.wandb
+    cfg["exp_cfg"].optimization_iterations = args.optimization_iterations
 
     log_file = join(cfg["exp_cfg"].output_location, cfg["exp_cfg"].version + ".log")
     set_logger(log_file)
@@ -47,4 +51,6 @@ if __name__=="__main__":
         init_wandb(cfg.copy())
     
     pipeline = trainer.factory.create(cfg["model_cfg"].trainer_key, **cfg)
-    pipeline.train()
+    # pipeline.train()
+
+    pipeline.test()

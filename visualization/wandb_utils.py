@@ -56,3 +56,21 @@ def visualize_images(epochID, mode, gt_image, pred_image, shift_image=None):
     # grid_layers = vutils.make_grid(torch.from_numpy(grid_layers), nrow=4, normalize=True, scale_each=True)
     # wandb.log({"{}_reconstruction".format(mode): wandb.Image(torch.cat([grid, grid_layers], dim=1))}, step=epochID)
     wandb.log({"{}_reconstruction".format(mode): wandb.Image(grid)}, step=epochID)
+
+def visualize_GuidedRearranged_Images(epochID, mode, gt_image, pred_image, rearranged_image):
+    grid = np.zeros((12, gt_image.shape[1], gt_image.shape[2], gt_image.shape[3]))
+
+    if pred_image.shape[1] != gt_image.shape[1]:
+        pred_image = np.expand_dims(pred_image.argmax(axis=1), 1)
+
+    if rearranged_image.shape[1] != gt_image.shape[1]:
+        rearranged_image = np.expand_dims(rearranged_image.argmax(axis=1), 1)
+
+    for i in range(grid.shape[0]//3):
+        grid[i] = gt_image[i]
+        grid[i+4] = pred_image[i]
+        grid[i+8] = rearranged_image[i]
+
+    grid = vutils.make_grid(torch.from_numpy(grid), nrow=4, normalize=True, scale_each=True)
+
+    wandb.log({"{}_reconstruction_rearranged".format(mode): wandb.Image(grid)}, step=epochID)
